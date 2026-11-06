@@ -4,3 +4,4 @@ __pycache__/
 config/operator.json
 docs/preview/
 docs/images/frames/
+output/

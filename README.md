@@ -29,6 +29,13 @@ GitHub Pages を有効にすると `https://<ユーザー名>.github.io/<リポ�
 
 運用者モードは GitHub と Meta アプリを運用会社が1つずつ持ち、医院ごとのリポジトリ作成・Secrets 登録・Pages 設定・設定ファイル生成・テスト起動を `scripts/setup_clinic.py` が GitHub API で自動実行します。トークンは `scripts/get_token.py --link` で作る許可リンク → 医院がタップ → `docs/authorize.html` に出るコード → `--code` で交換、という流れです。運用者の秘密情報は `config/operator.json`（gitignore 済み）に置きます。
 
+## 手動投稿モード（Meta アプリの準備前や、自動投稿を使わない医院向け）
+
+```bash
+python scripts/manual_batch.py --days 7        # または 手動投稿を作る.bat をダブルクリック
+```
+本番と同じネタ選び・デザインで `output/manual/YYYY-MM-DD/` に画像・動画・caption.txt を出力し、`output/manual/index.html` から保存・コピーして投稿します。履歴は `state/posted.json` に残るので、後で自動投稿に切り替えても重複しません。
+
 ## フォルダ構成
 
 ```
@@ -45,6 +52,7 @@ scripts/illustration.py     無料AIイラスト（医院の写真 image_path �
 scripts/media.py            ffmpeg でリール動画化
 scripts/instagram.py        Instagram API（Instagram Login 版・Facebookページ不要）
 scripts/check_setup.py      トークン・設定の確認
+scripts/manual_batch.py     手動投稿モード: 数日分をまとめて生成
 scripts/setup_clinic.py     運用者向け: 医院を1件まとめてセットアップ（GitHub API）
 scripts/get_token.py        運用者向け: 許可リンク作成とコード→トークン交換
 config/operator.example.json 運用者設定の見本（operator.json は gitignore）
