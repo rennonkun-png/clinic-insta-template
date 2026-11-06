@@ -1,0 +1,92 @@
+{
+  "_comment": "医院ごとの設定ファイル。初期設定ガイド（docs/index.html）の「設定ファイル作成」で生成できます。config/examples/ に業種別の見本があります。",
+  "clinic_name": "サンプル歯科クリニック",
+  "clinic_name_short": "サンプル歯科",
+  "specialties": [
+    "dental"
+  ],
+  "_specialties_help": "dental(歯科) / internal(内科) / gastroenterology(消化器内科) / dermatology(皮膚科) / ent(耳鼻咽喉科) / pediatrics(小児科) / ophthalmology(眼科) / orthopedics(整形外科) / gynecology(婦人科) / mental(心療内科) / beauty(美容医療) / webmarketing(クリニック向けWEB知識：自社発信用)。医療系があれば common(季節・健康全般) が自動で含まれます。",
+  "goals": [
+    "reach",
+    "followers",
+    "acquisition"
+  ],
+  "_goals_help": "運用の目的（複数選択可）。reach=伸びる投稿(カルーセル・保存誘導) / reels=リール動画 / followers=フォロワー増(フォロー誘導) / acquisition=集患(予約導線・地域タグ優先)",
+  "formats": {
+    "reel_weekdays": [
+      3,
+      6
+    ],
+    "_reel_weekdays_help": "goals に reels がある場合、リールを投稿する曜日。1=月 … 7=日"
+  },
+  "services": {
+    "whitening": {
+      "name": "ホワイトニング",
+      "cta": "当院ではホワイトニングのご相談も承っています。ご希望やライフスタイルに合わせた方法をご提案しますので、お気軽にお問い合わせください（自由診療）。"
+    },
+    "ceramic": {
+      "name": "セラミック治療",
+      "cta": "当院ではセラミックによる治療も行っています。費用やメリット・デメリットは診察時に丁寧にご説明します（自由診療）。"
+    },
+    "orthodontics": {
+      "name": "矯正治療",
+      "cta": "当院では矯正のご相談も承っています。まずは現在のお口の状態を一緒に確認することから始めましょう（自由診療）。"
+    }
+  },
+  "_services_help": "医院で提供しているサービスだけ残してください。ここに無いサービスの紹介投稿は自動で除外されます。使えるキー: whitening / ceramic / orthodontics / implant / pediatric_dental / perio / sleep_apnea / beauty_iv / placenta / laser / aga / vaccination / health_check / allergy / endoscopy / pylori / hearing / contact / myopia_control / rehab / osteoporosis / sports / pill / hpv / menopause / counseling / web_consulting",
+  "theme": {
+    "primary_color": "#2A7A6E",
+    "accent_color": "#E9C46A",
+    "font": "gothic",
+    "_help": "font は gothic（ゴシック）か serif（明朝）。layout を photo / cover / plain にすると固定、未指定なら自動で交互。"
+  },
+  "logo_path": "",
+  "_logo_help": "任意。例: assets/logo.png （PNG推奨・背景透過）。空なら医院名をテキストで表示します。",
+  "footer_text": "東京都○○区○○1-2-3 ／ TEL 03-0000-0000",
+  "author_label": "歯科医師が解説",
+  "_author_label_help": "画像の上部に入る肩書き。例: 歯科医師が解説 / 歯科衛生士が解説 / 小児科医が解説。空なら診療科から自動",
+  "person_image": "",
+  "_person_image_help": "任意。院長やスタッフの写真（背景透過PNG推奨）例: assets/doctor.png。表紙とリールの右下に入ります",
+  "caption": {
+    "default_cta": "",
+    "_default_cta_help": "サービスに紐付かない通常投稿の末尾に入れる一文（任意）",
+    "signature": "ご予約・ご相談はプロフィールのリンクからお気軽にどうぞ。",
+    "save_cta": "",
+    "follow_cta": "",
+    "_cta_help": "save_cta / follow_cta を空にすると標準文（保存・フォローの呼びかけ）が入ります",
+    "disclaimer": "※ 効果や経過には個人差があります。症状や治療については、必ず医師・歯科医師にご相談ください。",
+    "hashtags_fixed": [
+      "#サンプル歯科",
+      "#○○区歯医者",
+      "#歯科クリニック"
+    ],
+    "hashtags_max": 10,
+    "include_specialty_hashtags": true
+  },
+  "schedule": {
+    "post_weekdays": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "_post_weekdays_help": "投稿する曜日。1=月 2=火 3=水 4=木 5=金 6=土 7=日。空配列なら毎日。",
+    "skip_dates": [],
+    "_skip_dates_help": "投稿しない日付。例: [\"2026-12-30\", \"2026-12-31\", \"2027-01-01\"]",
+    "start_date": "2026-11-10"
+  },
+  "ai": {
+    "auto_brushup": true,
+    "brushup_new_posts": 7,
+    "_ai_help": "ANTHROPIC_API_KEY を GitHub Secrets に設定すると、週次分析のあとに AI が新ネタ生成・不調ネタの引退を自動で行います"
+  },
+  "image": {
+    "ai_illustration": true,
+    "_ai_illustration_help": "true なら投稿ごとに無料AI（Pollinations.ai・APIキー不要）でイラストを自動生成して画像・リールに入れます。失敗時や false のときは図形デザインのみになります。投稿に image_path を指定すると医院の写真を優先します。",
+    "base_url": "",
+    "_base_url_help": "空ならGitHub Pagesの URL を自動で使います。独自サーバーに置く場合のみ指定。",
+    "font_candidates": []
+  }
+}

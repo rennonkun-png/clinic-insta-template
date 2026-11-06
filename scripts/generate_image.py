@@ -252,6 +252,9 @@ def _layout_pop(d, tokens, f_big, f_small, max_w, pad) -> list[list[tuple[str, s
     for kind, t in expanded:
         w = width(kind, t)
         if cur_w + w > max_w and lines[-1]:
+            if t in "、。，" :  # 句読点が行頭に来る → サイズを下げて組み直す合図
+                lines[-1].append(("split", t, w))
+                continue
             if kind == "small" and len(lines[-1]) > 1 and lines[-1][-1][0] != "small":
                 prev = lines[-1].pop()  # 助詞が行頭に来ないよう、直前の単語ごと送る
                 lines.append([prev])

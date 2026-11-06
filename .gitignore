@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .env
 config/operator.json
+config/genova.json
 docs/preview/
 docs/images/frames/
 output/
