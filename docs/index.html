@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instagram 自動投稿 セットアップ</title>
+<meta name="description" content="歯科・医科クリニック向け Instagram 毎日自動投稿システムのセットアップ画面">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F5F6F4;--panel:#FFFFFF;--ink:#1C1F22;--muted:#626B72;--line:#DDE2DF;--brand:#155E4C;--brand-deep:#0F463A;--marker:#F4C542;--danger:#A93F36;--ok:#2F7A4A;--code:#1A1F23;--code-text:#E8ECEA;--nav-w:290px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13181A;--panel:#1B2124;--ink:#EDF0EE;--muted:#9AA6AC;--line:#2C3539;--code:#0B0F11}}
+:root[data-theme="dark"]{--bg:#13181A;--panel:#1B2124;--ink:#EDF0EE;--muted:#9AA6AC;--line:#2C3539;--code:#0B0F11}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Noto Sans JP","Hiragino Sans","Yu Gothic UI",system-ui,sans-serif;font-weight:500;line-height:1.8;font-size:16px;line-break:strict;overflow-wrap:anywhere}
+p,li,td,label{text-wrap:pretty}
+a{color:var(--brand-deep);text-decoration-thickness:1.5px;text-underline-offset:3px}
+.app{display:grid;grid-template-columns:var(--nav-w) 1fr;min-height:100vh}
+aside{position:sticky;top:0;height:100vh;background:var(--panel);border-right:1px solid var(--line);padding:28px 22px;overflow-y:auto}
+aside .brand{font-weight:700;font-size:17px;line-height:1.3;margin:0 0 26px}
+aside .brand small{display:block;font-weight:500;color:var(--muted);font-size:12.5px;margin-top:4px}
+.steps{list-style:none;margin:0;padding:0;position:relative}
+.steps::before{content:"";position:absolute;left:17px;top:18px;bottom:18px;width:2px;background:var(--line)}
+.steps li{position:relative;display:flex;align-items:center;gap:14px;padding:9px 6px 9px 0;cursor:pointer;color:var(--muted);font-size:15px;border-radius:6px}
+.steps li .n{position:relative;z-index:1;width:36px;height:36px;border-radius:50%;background:var(--panel);border:2px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:700;flex:none;color:var(--muted)}
+.steps li:hover{color:var(--ink)}
+.steps li.active{color:var(--ink);font-weight:700}
+.steps li.active .n{border-color:var(--brand);color:var(--brand)}
+.steps li.done .n{background:var(--brand);border-color:var(--brand);color:#fff}
+.steps li.done .n::before{content:"✓"}
+.steps li.done:not(.active){color:var(--ink)}
+.progress{margin:24px 0 0;font-size:13px;color:var(--muted)}
+.progress .bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:8px}
+.progress .bar i{display:block;height:100%;background:var(--brand);width:0;transition:width .3s}
+main{padding:40px 48px 120px;max-width:820px;width:100%}
+.screen{display:none}.screen.active{display:block}
+h1{font-size:30px;line-height:1.35;margin:0 0 10px;font-weight:700;text-wrap:balance}
+h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--marker) 58%)}
+.lead{color:var(--muted);margin:0 0 26px;font-size:15.5px}
+h2{font-size:18px;margin:34px 0 10px;font-weight:700;text-wrap:balance;padding-left:12px;border-left:4px solid var(--marker)}
+.card{background:var(--panel);border-radius:8px;padding:22px 26px;margin:14px 0}
+ol.todo{list-style:none;padding:0;margin:0}
+ol.todo li{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:start}
+ol.todo li:last-child{border:0}
+ol.todo input{width:22px;height:22px;margin-top:5px;accent-color:var(--brand)}
+ol.todo li.checked label{color:var(--muted);text-decoration:line-through}
+.note{border-left:4px solid var(--marker);background:var(--panel);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14.5px}
+.note.warn{border-left-color:var(--danger)}
+.note.ok{border-left-color:var(--ok)}
+code{background:rgba(21,94,76,.08);padding:2px 6px;border-radius:4px;font-size:.92em;font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--code);color:var(--code-text);padding:14px 16px;border-radius:8px;overflow:auto;font-size:13px;line-height:1.6}
+pre code{background:none;padding:0;color:inherit}
+kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 7px;font-size:.9em;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:top}
+th{color:var(--ink);font-weight:700;white-space:nowrap;width:1%}
+details{background:var(--panel);border-radius:8px;padding:10px 18px;margin:8px 0}
+summary{cursor:pointer;font-weight:700}
+.btn{display:inline-block;background:var(--brand);color:#fff;border:0;border-radius:6px;padding:12px 22px;font-weight:700;font-size:15px;cursor:pointer;text-decoration:none;font-family:inherit}
+.btn:hover{background:var(--brand-deep)}
+.btn.sec{background:var(--panel);color:var(--brand-deep);border:2px solid var(--brand)}
+.btn.sec:hover{background:rgba(21,94,76,.06)}
+.btn.ghost{background:transparent;color:var(--muted);border:0}
+.btn:disabled{opacity:.35;cursor:default}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--marker);outline-offset:2px}
+.pager{display:flex;justify-content:space-between;align-items:center;margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}
+.small{font-size:13.5px;color:var(--muted)}
+.f{display:block;font-size:14.5px;font-weight:700;margin:16px 0}
+.f input[type=text],.f input[type=date],.f textarea,.f select{display:block;width:100%;margin-top:6px;padding:11px 12px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;font-size:15.5px;font-weight:500}
+.f input:focus,.f textarea:focus,.f select:focus{border-color:var(--brand);background:var(--panel)}
+.f textarea{min-height:60px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chips label{border:1.5px solid var(--line);border-radius:6px;padding:8px 14px;font-size:14.5px;cursor:pointer;background:var(--bg);user-select:none;font-weight:500}
+.chips label:has(input:checked){background:var(--brand);color:#fff;border-color:var(--brand);font-weight:700}
+.chips input{display:none}
+.svc{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px;font-weight:500}
+.svc input{width:20px;height:20px;accent-color:var(--brand)}
+.svc .edit{margin-left:auto;font-size:13px;color:var(--brand-deep);cursor:pointer;white-space:nowrap;text-decoration:underline;text-underline-offset:3px}
+.svc-cta{display:none;width:100%;margin:4px 0 8px;padding:8px;border:1.5px solid var(--line);border-radius:6px;font:inherit;font-size:13.5px;background:var(--bg);color:var(--ink)}
+.colors{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.colors label{font-size:13.5px;display:flex;align-items:center;gap:8px;font-weight:500}
+.colors input[type=color]{width:52px;height:36px;border:1.5px solid var(--line);border-radius:6px;background:none;padding:2px}
+.pv{width:120px;height:120px;border-radius:6px;overflow:hidden;background:#fff;border:1px solid var(--line);position:relative;flex:none}
+.pv .top{display:none}
+.pv .t{position:absolute;left:12px;top:30px;width:76px;height:9px;border-radius:2px;background:#1C1F22}
+.pv .a{position:absolute;left:12px;top:44px;width:40px;height:9px;border-radius:2px}
+.pv .b{position:absolute;left:12px;top:64px;width:88px;height:4px;border-radius:2px;background:#9AA6AC}
+.pv .n{position:absolute;left:12px;bottom:10px;width:40px;height:4px;border-radius:2px;background:#9AA6AC}
+.copybar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:10px 0}
+.stat div{background:var(--bg);border-radius:6px;padding:10px 12px}
+.stat b{font-size:24px;display:block}
+.mobilebar{display:none}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  aside{display:none}
+  main{padding:22px 16px 110px}
+  h1{font-size:24px}
+  .card{padding:16px 18px}
+  .mobilebar{display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom));gap:6px;overflow-x:auto;z-index:10;scrollbar-width:none}
+  .mobilebar button{flex:none;border:1.5px solid var(--line);background:var(--bg);color:var(--muted);border-radius:6px;padding:9px 13px;font-size:13.5px;font-weight:700;white-space:nowrap;font-family:inherit}
+  .mobilebar button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .mobilebar button.done{border-color:var(--brand);color:var(--brand)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">Instagram 自動投稿<small>セットアップ画面</small></div>
+  <ul class="steps" id="nav"></ul>
+  <div class="progress"><span id="ptext">0 / 6 完了</span><div class="bar"><i id="pbar"></i></div></div>
+</aside>
+
+<main>
+
+<!-- 0 -->
+<section class="screen" data-title="はじめに">
+  <h1><em>1時間</em>で、毎日の投稿が自動になります</h1>
+  <p class="lead">歯科・医科クリニック向けの Instagram 毎日自動投稿システムです。費用は0円。進め方は2通りあります。</p>
+  <div class="card">
+    <h2 style="margin-top:0">どちらで進めますか？</h2>
+    <table>
+      <tr><th>医院が自分で設定する</th><td>この画面の Step 1〜5 を上から順に（約1時間）。GitHub と Meta の登録を医院側で行います。チェックは自動で保存されます。</td></tr>
+      <tr><th>運用会社がまとめて設定する</th><td>医院は「プロアカウント化」と「許可リンクをタップ」だけ（約5分）。残りは運用会社がコマンド1本で行います。→ <a href="operator.html">運用者ガイド</a> ／ 医院に送るページ → <a href="clinic.html">医院向けのお願い</a></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">できること</h2>
+    <table>
+      <tr><th>毎日自動投稿</th><td>診療科に合った健康コラムを、指定した曜日・時間に投稿。デザインは<a href="リサーチ_伸びる投稿の分析.md" target="_blank" rel="noopener">伸びている投稿の分析</a>に基づく型（表紙は 1 メッセージ・大きな文字、2 枚目に目次、1 枚 1 ポイント、まとめ、CTA は 1 つ）。背景写真は投稿内容に合わせて AI が毎回生成します</td></tr>
+      <tr><th>目的に合わせて最適化</th><td>「伸びる投稿」「リール」「フォロワー増」「集患」を選ぶと、形式や文末の呼びかけが自動で変わります</td></tr>
+      <tr><th>サービス紹介</th><td>ホワイトニング・矯正・美容点滴など提供中のサービスに関する投稿の最後に、ご案内を自動で添えます</td></tr>
+      <tr><th>毎週、分析して賢くなる</th><td>反応の良いテーマ・形式・切り口を学習し、次の投稿に反映します</td></tr>
+      <tr><th>AIでネタ生成（任意）</th><td>医院のHPや資料を読み込んで投稿ネタを作成。好調な傾向から新ネタも自動追加</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h2 style="margin-top:0">用意するもの</h2>
+    <ol class="todo">
+      <li><input type="checkbox"><label>医院の Instagram アカウント（ログインできること）</label></li>
+      <li><input type="checkbox"><label>Facebook アカウント（Meta 開発者登録に使います。個人のもので構いません）</label></li>
+      <li><input type="checkbox"><label>メールアドレス（GitHub の登録用）</label></li>
+      <li><input type="checkbox"><label>医院名・住所・電話・診療科・提供サービス・テーマカラー（HPの色など）</label></li>
+    </ol>
+  </div>
+  <div class="note">複数の医院で使う場合は、医院ごとにこの手順を繰り返します（Step 3 の GitHub リポジトリを医院ごとに作成）。自社のWEB情報発信アカウントも同じ手順で、診療科に「クリニックWEB集患コラム」を選ぶだけです。</div>
+</section>
+
+<!-- 1 -->
+<section class="screen" data-title="Instagram の準備">
+  <h1>Instagram を<em>プロアカウント</em>にする</h1>
+  <p class="lead">自動投稿には「ビジネス」または「クリエイター」アカウントが必要です。すでにプロアカウントなら、下のチェックを付けて次へ進んでください。Facebookページとの連携は不要です。</p>
+  <div class="card"><ol class="todo">
+    <li><input type="checkbox"><label>Instagram アプリでプロフィール右上の <kbd>≡</kbd> → <b>設定とプライバシー</b> を開く</label></li>
+    <li><input type="checkbox"><label><b>アカウントの種類とツール</b> → <b>プロアカウントに切り替える</b></label></li>
+    <li><input type="checkbox"><label>カテゴリは「歯科医院」「医療・健康」など近いものを選び、<b>ビジネス</b> を選択（Facebookページの連携は「今はしない」でOK）</label></li>
+    <li><input type="checkbox"><label>プロフィールに「診療時間・住所・予約リンク」を入れておく</label></li>
+  </ol></div>
+</section>
+
+<!-- 2 -->
+<section class="screen" data-title="トークン取得">
+  <h1>Meta 開発者サイトで<em>トークン</em>を取得する</h1>
+  <p class="lead">いちばん手間のかかる工程です（15〜20分）。最後に <b>Instagram ユーザーID</b> と <b>アクセストークン</b> の2つを手元に控えます。</p>
+  <div class="card"><ol class="todo">
+    <li><input type="checkbox"><label><a href="https://developers.facebook.com/" target="_blank" rel="noopener">developers.facebook.com</a> を開き、Facebookアカウントでログイン → 案内に従って<b>開発者登録</b></label></li>
+    <li><input type="checkbox"><label>右上 <b>マイアプリ</b> → <b>アプリを作成</b></label></li>
+    <li><input type="checkbox"><label>ユースケースで <b>「Instagram」</b> を選ぶ。アプリ名は「○○クリニック投稿」など自由。連絡先メールを入力して作成</label></li>
+    <li><input type="checkbox"><label>左メニュー <b>Instagram</b> → <b>API setup with Instagram login</b> を開く</label></li>
+    <li><input type="checkbox"><label><b>「1. Generate access tokens」</b> の <b>Add account</b> で医院の Instagram アカウントを追加</label></li>
+    <li><input type="checkbox"><label>Instagram アプリ側で <kbd>≡</kbd> → 設定 → <b>ウェブサイトのアクセス許可 → アプリとウェブサイト → テスター招待</b> を<b>承認</b></label></li>
+    <li><input type="checkbox"><label>開発者サイトに戻り <b>Generate token</b> → Instagram でログイン → 権限をすべて許可 → 表示されたトークンをコピー（<b>IG_ACCESS_TOKEN</b>）</label></li>
+    <li><input type="checkbox"><label>同じ画面の <b>Instagram user ID</b>（数字）をコピー（<b>IG_USER_ID</b>）</label></li>
+  </ol></div>
+  <div class="note warn"><b>トークンはパスワードと同じです。</b> メールやチャットに貼らず、Step 3 で GitHub の「Secrets」にだけ保存してください。有効期限は60日ですが、システムが毎日自動で延長します。</div>
+  <details><summary>権限の画面で確認すること</summary><p><code>instagram_business_basic</code>、<code>instagram_business_content_publish</code>、<code>instagram_business_manage_insights</code> の3つがオンになっていればOKです。</p></details>
+  <details><summary>アプリの「公開」や審査は必要？</summary><p>不要です。自分の医院アカウントだけに投稿するなら、開発モードのままで動きます。</p></details>
+</section>
+
+<!-- 3 -->
+<section class="screen" data-title="GitHub の設定">
+  <h1>GitHub に<em>プログラム</em>を置く</h1>
+  <p class="lead">GitHub は無料で毎日プログラムを動かしてくれる場所です。画像の公開場所も兼ねます。</p>
+  <div class="card"><ol class="todo">
+    <li><input type="checkbox"><label><a href="https://github.com/signup" target="_blank" rel="noopener">github.com</a> でアカウントを作成（無料）</label></li>
+    <li><input type="checkbox"><label>このシステムの元リポジトリ（テンプレート）を開き、緑の <b>Use this template</b> → <b>Create a new repository</b>。名前は <code>clinic-insta-○○</code> など。<b>Public</b> を選択（投稿画像とネタのみ公開され、トークンは公開されません）</label></li>
+    <li><input type="checkbox"><label><b>Settings → Secrets and variables → Actions → New repository secret</b> で <code>IG_ACCESS_TOKEN</code> と <code>IG_USER_ID</code> を登録（Step 2 で控えた値）</label></li>
+    <li><input type="checkbox"><label><b>Settings → Pages</b> → Source: <b>Deploy from a branch</b> → Branch: <b>main</b> / <b>/docs</b> → Save</label></li>
+    <li><input type="checkbox"><label><b>Actions</b> タブ → 「enable them」が出たらクリックして有効化</label></li>
+    <li><input type="checkbox"><label><b>Settings → Actions → General</b> → 一番下 <b>Workflow permissions</b> を <b>Read and write</b> にして Save</label></li>
+  </ol></div>
+  <h2>背景写真をきれいに出すために（おすすめ・無料）</h2>
+  <div class="card">
+    <p>投稿の背景写真は AI が毎回生成します。キー無しでも動きますが、混雑時に失敗したり指示どおりに描かれないことがあります。<b>Cloudflare の無料アカウント</b>を登録すると、安定して投稿内容どおりの写真が出ます（5分・費用0円・1日あたり十分な無料枠）。</p>
+    <ol class="todo">
+      <li><input type="checkbox"><label><a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener">dash.cloudflare.com</a> で無料アカウントを作成（ドメイン登録は不要。スキップできます）</label></li>
+      <li><input type="checkbox"><label>ダッシュボード右側または URL に表示される <b>Account ID</b>（32桁の英数字）をコピー → GitHub Secrets に <code>CF_ACCOUNT_ID</code> として登録</label></li>
+      <li><input type="checkbox"><label>右上のプロフィール → <b>My Profile → API Tokens → Create Token</b> → テンプレート「<b>Workers AI</b>」を選んで作成 → 表示されたトークンを <code>CF_API_TOKEN</code> として登録</label></li>
+    </ol>
+    <p class="small">代わりに Hugging Face の無料トークンを <code>HF_TOKEN</code> として登録しても動きます。医院の写真を使いたい投稿は、投稿データに <code>image_path</code> を指定すれば AI 生成の代わりに使われます。</p>
+  </div>
+  <details><summary>任意: AI でネタを自動生成する</summary>
+    <table>
+      <tr><th>ANTHROPIC_API_KEY</th><td>医院のHPからネタ生成・週次ブラッシュアップをする場合に登録（従量課金・月数百円程度）</td></tr>
+    </table>
+  </details>
+</section>
+
+<!-- 4 -->
+<section class="screen" data-title="医院の設定を作る">
+  <h1>医院の<em>設定</em>を作る</h1>
+  <p class="lead">入力して「設定ファイルを作る」を押すと、貼り付け用の内容ができます。最低限は医院名・診療科・目的の3つだけでも動きます。</p>
+  <form class="card" onsubmit="return false">
+    <label class="f">医院名<input type="text" id="name" placeholder="例：たびかわ歯科クリニック"></label>
+    <label class="f">画像の下に入れる一行（住所・電話など）<input type="text" id="footer" placeholder="例：東京都○○区○○1-2-3 ／ TEL 03-0000-0000"></label>
+    <label class="f">画像の上に入れる肩書き（誰が解説しているか）<input type="text" id="author" placeholder="例：歯科医師が解説 ／ 歯科衛生士が解説 ／ 小児科医が解説（空なら診療科から自動）"></label>
+
+    <label class="f">診療科（複数可）
+      <div class="chips" id="specs">
+        <label><input type="checkbox" value="dental" checked>歯科</label>
+        <label><input type="checkbox" value="internal">内科</label>
+        <label><input type="checkbox" value="gastroenterology">消化器内科</label>
+        <label><input type="checkbox" value="dermatology">皮膚科</label>
+        <label><input type="checkbox" value="ent">耳鼻咽喉科</label>
+        <label><input type="checkbox" value="pediatrics">小児科</label>
+        <label><input type="checkbox" value="ophthalmology">眼科</label>
+        <label><input type="checkbox" value="orthopedics">整形外科</label>
+        <label><input type="checkbox" value="gynecology">婦人科</label>
+        <label><input type="checkbox" value="mental">心療内科</label>
+        <label><input type="checkbox" value="beauty">美容医療</label>
+        <label><input type="checkbox" value="webmarketing">クリニックWEB集患コラム（自社発信用）</label>
+      </div>
+    </label>
+
+    <label class="f">運用の目的（複数可）
+      <div class="chips" id="goals">
+        <label><input type="checkbox" value="reach" checked>伸びる投稿</label>
+        <label><input type="checkbox" value="reels">リール動画</label>
+        <label><input type="checkbox" value="followers" checked>フォロワーを増やす</label>
+        <label><input type="checkbox" value="acquisition" checked>集患</label>
+      </div>
+    </label>
+
+    <label class="f">提供しているサービス（該当するものにチェック。文末のご案内文は「文を編集」で変更できます）</label>
+    <div id="services"></div>
+
+    <label class="f">デザイン
+      <div class="colors">
+        <label>メインカラー<input type="color" id="cPrimary" value="#2a7a6e"></label>
+        <label>アクセント<input type="color" id="cAccent" value="#e9c46a"></label>
+        <label>見出しの書体 <select id="fontSel" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)"><option value="gothic">ゴシック（親しみ）</option><option value="serif">明朝（上品）</option></select></label>
+        <div class="pv" id="pv"><div class="top"></div><div class="t"></div><div class="a"></div><div class="b"></div><div class="n"></div></div>
+      </div>
+    </label>
+
+    <label class="f">固定ハッシュタグ（スペース区切り。医院名・地域名など）<input type="text" id="tags" placeholder="例：#たびかわ歯科 #○○区歯医者 #○○駅"></label>
+
+    <details style="margin-top:14px"><summary>詳細設定（必要なときだけ）</summary>
+      <label class="f">投稿する曜日
+        <div class="chips" id="days">
+          <label><input type="checkbox" value="1" checked>月</label><label><input type="checkbox" value="2" checked>火</label><label><input type="checkbox" value="3" checked>水</label><label><input type="checkbox" value="4" checked>木</label><label><input type="checkbox" value="5" checked>金</label><label><input type="checkbox" value="6" checked>土</label><label><input type="checkbox" value="7">日</label>
+        </div>
+      </label>
+      <label class="f">リールを投稿する曜日（目的に「リール動画」を選んだとき）
+        <div class="chips" id="reelDays">
+          <label><input type="checkbox" value="1">月</label><label><input type="checkbox" value="2">火</label><label><input type="checkbox" value="3" checked>水</label><label><input type="checkbox" value="4">木</label><label><input type="checkbox" value="5">金</label><label><input type="checkbox" value="6" checked>土</label><label><input type="checkbox" value="7">日</label>
+        </div>
+      </label>
+      <label class="f">投稿開始日<input type="date" id="start"></label>
+      <label class="f">投稿しない日（カンマ区切り）<input type="text" id="skip" placeholder="例：2026-12-30, 2026-12-31, 2027-01-01"></label>
+      <label class="f">予約・問い合わせの一文<input type="text" id="signature" value="ご予約・ご相談はプロフィールのリンクからお気軽にどうぞ。"></label>
+      <label class="f">すべての投稿の末尾に入れる一文（自社アカウントなら「こういった情報を直接お届けに参ります」など）<textarea id="defaultCta"></textarea></label>
+      <label class="f"><input type="checkbox" id="aiIllust" checked> AIでイラストを自動生成する（オフにすると文字だけのデザイン）</label>
+      <p class="small">投稿時刻は GitHub の <code>.github/workflows/daily-post.yml</code> の cron 行で変更します（初期値：日本時間 12:00）。</p>
+    </details>
+
+    <div class="copybar" style="margin-top:18px">
+      <button class="btn" type="button" onclick="gen()">設定ファイルを作る</button>
+      <button class="btn sec" type="button" onclick="copyOut()">コピー</button>
+      <button class="btn sec" type="button" onclick="dl()">ダウンロード</button>
+      <span class="small" id="msg"></span>
+    </div>
+    <pre id="out" style="min-height:70px">ここに設定ファイルの内容が表示されます</pre>
+  </form>
+  <div class="card"><b>貼り付け方</b><ol class="todo">
+    <li><input type="checkbox"><label>GitHub のリポジトリで <code>config/clinic.json</code> を開き、鉛筆アイコン（Edit）をクリック</label></li>
+    <li><input type="checkbox"><label>中身をすべて消して、作った内容を貼り付け</label></li>
+    <li><input type="checkbox"><label>右上の <b>Commit changes</b> → もう一度 <b>Commit changes</b> で保存</label></li>
+  </ol></div>
+</section>
+
+<!-- 5 -->
+<section class="screen" data-title="テストして開始">
+  <h1><em>テスト</em>して本番開始</h1>
+  <div class="card"><ol class="todo">
+    <li><input type="checkbox"><label>GitHub の <b>Actions</b> タブ → 左の <b>Instagram 毎日自動投稿</b> → 右の <b>Run workflow</b> → <b>「テスト実行」にチェック</b> → Run workflow</label></li>
+    <li><input type="checkbox"><label>2〜4分で緑のチェックが付けば成功。実行結果を開き、下の <b>Artifacts → generated-media</b> をダウンロードして画像・キャプションを確認</label></li>
+    <li><input type="checkbox"><label>問題なければ、もう一度 Run workflow を「テスト実行」<b>なし</b>・「曜日設定を無視」<b>あり</b>で実行 → Instagram に1件投稿されます</label></li>
+    <li><input type="checkbox"><label>投稿を Instagram で確認。あとは毎日自動です</label></li>
+  </ol></div>
+  <div class="note ok">初回は画像の公開（GitHub Pages）に数分かかることがあります。「公開待機中」と表示されても最大8分待ってから投稿する仕組みなので、そのままお待ちください。</div>
+</section>
+
+<!-- 6 -->
+<section class="screen" data-title="運用とレポート">
+  <h1>運用と<em>成果レポート</em></h1>
+  <h2>成果レポート（毎週月曜に自動更新）</h2>
+  <div class="card" id="reportBox"><span class="small">読み込み中…</span></div>
+
+  <h2>よくある操作</h2>
+  <div class="card"><table>
+    <tr><th>ネタを足す・直す</th><td><code>content/</code> の診療科ごとのファイルを編集。医院独自のお知らせは <code>content/custom.json</code> に。<code>"date": "2026-12-01"</code> を付けるとその日に必ず投稿</td></tr>
+    <tr><th>医院の写真を使う</th><td>投稿に <code>"image_path": "assets/photos/xxx.jpg"</code> を付けると AI イラストの代わりに使われます</td></tr>
+    <tr><th>ロゴを入れる</th><td><code>assets/logo.png</code>（背景透過）を置き、設定の <code>logo_path</code> に <code>assets/logo.png</code></td></tr>
+    <tr><th>院長・スタッフの写真を入れる</th><td>伸びている投稿のほとんどに「誰が言っているか」の写真があります。背景を透過したPNG（例: <code>assets/doctor.png</code>）を置き、設定の <code>person_image</code> に指定すると、表紙とリールの右下に入ります</td></tr>
+    <tr><th>サービスを増やした</th><td>設定の <code>services</code> に追加するだけ（例：美容点滴を始めたら <code>beauty_iv</code>）</td></tr>
+    <tr><th>休診・年末年始</th><td>設定の <code>skip_dates</code> に日付を追加</td></tr>
+    <tr><th>一時停止</th><td>Actions → 「Instagram 毎日自動投稿」→ 右上「…」→ Disable workflow</td></tr>
+    <tr><th>トークンの期限</th><td>毎日自動延長。60日以上止めていた場合は Step 2 で再発行して Secrets を更新</td></tr>
+  </table></div>
+
+  <h2>AIでネタを作る（任意）</h2>
+  <div class="card">
+    <p>医院のHPや資料を読み込んで、投稿ネタ20件と提供サービス・ご案内文を作ります。パソコンで実行します。</p>
+<pre><code>pip install -r requirements.txt
+set ANTHROPIC_API_KEY=sk-ant-...
+python scripts/ai_generate.py --url https://医院のHP/ --file 診療案内.pdf --notes "11月から美容点滴を開始" --count 20 --apply-services</code></pre>
+    <p class="small">週次の自動ブラッシュアップ（好調な傾向から新ネタ7件・不調ネタの引退）は、<code>ANTHROPIC_API_KEY</code> を Secrets に入れると自動で動きます。AI生成の文章も医療広告ガイドラインを前提にしていますが、公開前に一度目を通すことをおすすめします。</p>
+  </div>
+
+  <h2>投稿ネタの書き方</h2>
+<pre><code>{
+  "id": "whitening-coffee",
+  "title": "コーヒー好きの歯が黄ばみやすい理由",
+  "hook": "question",
+  "body": ["本文の箇条書き1", "箇条書き2", "箇条書き3"],
+  "service": "whitening",
+  "hashtags": ["#ホワイトニング", "#歯の黄ばみ"],
+  "months": [1, 2],
+  "image_path": "assets/photos/whitening.jpg"
+}</code></pre>
+</section>
+
+<!-- 7 -->
+<section class="screen" data-title="困ったとき">
+  <h1>困ったとき</h1>
+  <details><summary>Actions が赤い × で失敗する</summary><p>実行結果の「投稿を実行」のログを確認してください。よくある原因：Secrets の名前のタイプミス／トークンの期限切れ（Step 2 で再発行）／Pages 未設定（Step 3）／Workflow permissions が Read のまま（Step 3）</p></details>
+  <details><summary>「公開されませんでした」と出る</summary><p>GitHub Pages の設定（Branch: main / /docs）を確認。初回は反映に10分ほどかかることがあります。時間をおいて再実行してください。</p></details>
+  <details><summary>「アカウントが ビジネス/クリエイター ではありません」</summary><p>Step 1 でプロアカウントに切り替えてから、Step 2 の Generate token をやり直してください。</p></details>
+  <details><summary>背景写真が入らない・内容と合わない</summary><p>キー無しの無料AI（Pollinations）は混雑で失敗したり、指示と違う写真になることがあります。投稿自体は文字だけのデザインで続きます。Step 3 の「背景写真をきれいに出すために」の Cloudflare 設定（無料）をおすすめします。</p></details>
+  <details><summary>画像の文字が □ になる</summary><p>フォントのインストールに失敗した場合です。Actions を再実行してください。</p></details>
+  <details><summary>パソコンで試したい</summary><pre><code>pip install -r requirements.txt
+cd scripts
+set DRY_RUN=1
+python main.py          （画像とキャプションだけ生成）
+python check_setup.py   （トークンと設定の確認）</code></pre></details>
+  <details><summary>進捗のチェックをリセットしたい</summary><p><button class="btn ghost" type="button" onclick="localStorage.removeItem('insta-setup');location.reload()">チェックをすべてリセット</button></p></details>
+</section>
+
+</main>
+</div>
+<div class="mobilebar" id="mnav"></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const screens=$$('.screen'); let cur=0;
+const KEY='insta-setup'; let saved={}; try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+function save(){ try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){} }
+// チェックボックスの保存
+$$('ol.todo input').forEach((cb,i)=>{ cb.dataset.i=i; if(saved['c'+i]) {cb.checked=true; cb.closest('li').classList.add('checked')}
+  cb.addEventListener('change',()=>{ saved['c'+i]=cb.checked; cb.closest('li').classList.toggle('checked',cb.checked); save(); renderNav(); }); });
+function stepDone(idx){ const cbs=screens[idx].querySelectorAll('ol.todo input'); return cbs.length>0 && [...cbs].every(c=>c.checked); }
+function renderNav(){
+  const nav=$('#nav'), m=$('#mnav'); nav.innerHTML=''; m.innerHTML='';
+  let done=0;
+  screens.forEach((s,i)=>{
+    const d=stepDone(i); if(d && i>=1 && i<=5) done++;
+    const li=document.createElement('li'); li.className=(i===cur?'active ':'')+(d?'done':''); li.innerHTML=`<span class="n">${d?'':i}</span><span>${s.dataset.title}</span>`; li.onclick=()=>go(i); nav.appendChild(li);
+    const b=document.createElement('button'); b.className=(i===cur?'active ':'')+(d?'done':''); b.textContent=(i>=1&&i<=5?i+'. ':'')+s.dataset.title; b.onclick=()=>go(i); m.appendChild(b);
+  });
+  $('#ptext').textContent=`${done} / 5 ステップ完了`; $('#pbar').style.width=(done/5*100)+'%';
+}
+function go(i){ cur=Math.max(0,Math.min(screens.length-1,i)); screens.forEach((s,k)=>s.classList.toggle('active',k===cur)); saved.cur=cur; save(); renderNav(); window.scrollTo({top:0}); const mb=$('#mnav button.active'); mb&&mb.scrollIntoView({inline:'center',block:'nearest'}); }
+// ページ送り
+screens.forEach((s,i)=>{ const p=document.createElement('div'); p.className='pager';
+  p.innerHTML=`<button class="btn ghost" type="button" ${i===0?'disabled':''}>← 前へ</button><span class="small">${i+1} / ${screens.length}</span><button class="btn" type="button" ${i===screens.length-1?'disabled':''}>${i===screens.length-1?'完了':'次へ →'}</button>`;
+  p.children[0].onclick=()=>go(i-1); p.children[2].onclick=()=>go(i+1); s.appendChild(p); });
+go(saved.cur||0);
+
+// ---- 設定フォーム
+const SERVICES=[
+  ["whitening","ホワイトニング","当院ではホワイトニングのご相談も承っています。ご希望やライフスタイルに合わせた方法をご提案しますので、お気軽にお問い合わせください（自由診療）。","dental"],
+  ["ceramic","セラミック治療","当院ではセラミックによる治療も行っています。費用やメリット・デメリットは診察時に丁寧にご説明します（自由診療）。","dental"],
+  ["orthodontics","矯正治療","当院では矯正のご相談も承っています。まずは現在のお口の状態を一緒に確認することから始めましょう（自由診療）。","dental"],
+  ["implant","インプラント","当院ではインプラント治療のご相談も承っています。骨の状態や全身の状態を確認したうえで、他の選択肢とあわせてご説明します（自由診療）。","dental"],
+  ["pediatric_dental","小児歯科","当院ではお子さまの歯のケアも行っています。初めての歯医者デビューもお気軽にどうぞ。","dental"],
+  ["perio","歯周病治療・予防","当院では歯周病の検査・クリーニングを行っています。気になる症状がある方は早めにご相談ください。","dental"],
+  ["sleep_apnea","睡眠時無呼吸の検査・治療","当院では睡眠時無呼吸症候群の検査・治療のご相談を承っています。いびきを指摘された方はご相談ください。","internal,dental,ent,mental"],
+  ["beauty_iv","美容点滴","当院では、ビタミンやアミノ酸などを点滴で補う「美容点滴」も行っています。ご紹介したケアをまとめてサポートしたい方は、診察時にご相談ください（自由診療・費用は院内掲示をご確認ください）。","internal,beauty,dermatology,gynecology"],
+  ["placenta","プラセンタ注射","当院ではプラセンタ注射も行っています。適応や注意点は診察時にご説明します。","internal,beauty,dermatology,gynecology"],
+  ["laser","レーザー治療（シミ・ほくろなど）","当院ではシミ・ほくろなどのレーザー治療も行っています。肌の状態を診たうえでご説明します（自由診療）。","dermatology,beauty"],
+  ["aga","AGA（薄毛）治療","当院ではAGAのご相談も承っています。進行の程度に合わせた治療をご提案します（自由診療）。","dermatology,internal"],
+  ["vaccination","予防接種","当院では各種予防接種を行っています。スケジュールのご相談もお気軽にどうぞ。","internal,pediatrics,dermatology,ent,gynecology"],
+  ["health_check","健康診断・検査","当院では健康診断・各種検査を行っています。結果の見方のご相談もお気軽にどうぞ。","internal,gastroenterology,pediatrics,ophthalmology,gynecology"],
+  ["allergy","アレルギー・花粉症治療","当院では花粉症・アレルギーの治療（初期療法・舌下免疫療法など）を行っています。","internal,pediatrics,ophthalmology,dermatology,ent"],
+  ["endoscopy","胃カメラ・大腸カメラ","当院では胃カメラ・大腸カメラ検査を行っています。鼻からの検査や鎮静剤の使用など、不安を減らす方法もご相談ください。","gastroenterology"],
+  ["pylori","ピロリ菌検査・除菌","当院ではピロリ菌の検査と除菌治療を行っています。胃の不調が続く方はご相談ください。","gastroenterology,internal"],
+  ["hearing","聴力検査・補聴器相談","当院では聴力検査と補聴器のご相談を承っています。聞こえにくさを感じたらお早めに。","ent"],
+  ["contact","コンタクトレンズ処方","当院ではコンタクトレンズの処方・定期検査を行っています。目に合ったレンズ選びをお手伝いします。","ophthalmology"],
+  ["myopia_control","近視の進行抑制","当院ではお子さまの近視進行抑制のご相談を承っています（自由診療）。","ophthalmology"],
+  ["rehab","リハビリテーション","当院では理学療法士によるリハビリを行っています。痛みの原因に合わせた運動をご提案します。","orthopedics"],
+  ["osteoporosis","骨密度検査","当院では骨密度検査を行っています。50歳を過ぎた女性の方は一度ご相談ください。","orthopedics,internal,gynecology"],
+  ["sports","スポーツ整形","当院ではスポーツによるけがや障害の診療を行っています。競技への復帰もサポートします。","orthopedics"],
+  ["pill","低用量ピル・月経移動","当院では低用量ピルの処方や月経移動のご相談を承っています。","gynecology"],
+  ["hpv","HPVワクチン・子宮頸がん検診","当院ではHPVワクチン接種と子宮頸がん検診を行っています。","gynecology,pediatrics,internal"],
+  ["menopause","更年期外来","当院では更年期の症状についてのご相談を承っています。ひとりで抱えずにお越しください。","gynecology,internal"],
+  ["counseling","カウンセリング","当院ではカウンセリングのご相談も承っています。まずは話すことから始めてみませんか。","mental"],
+  ["web_consulting","クリニック向けWEB集患支援（自社用）","こういったWEBに関する情報を、院長先生・ご担当者さまのもとへ直接お届けに参ります。「うちの場合はどうすれば？」というご相談も、DMまたはプロフィールのリンクからお気軽にどうぞ。","webmarketing"],
+];
+function renderServices(){
+  const specs=$$('#specs input:checked').map(i=>i.value); const box=$('#services');
+  const prev={}; $$('#services .svc').forEach(d=>{prev[d.dataset.key]={on:d.querySelector('input').checked,cta:d.nextElementSibling.value}});
+  box.innerHTML='';
+  SERVICES.filter(([k,,,c])=>c.split(',').some(x=>specs.includes(x))).forEach(([k,name,cta])=>{
+    const p=prev[k]||{};
+    const d=document.createElement('label'); d.className='svc'; d.dataset.key=k;
+    d.innerHTML=`<input type="checkbox" ${p.on?'checked':''}> ${name} <span class="edit" onclick="event.preventDefault();this.closest('label').nextElementSibling.style.display='block'">文を編集</span>`;
+    const t=document.createElement('textarea'); t.className='svc-cta'; t.value=p.cta??cta;
+    box.appendChild(d); box.appendChild(t);
+  });
+  if(!box.children.length) box.innerHTML='<span class="small">選択した診療科に対応するサービスはありません。</span>';
+}
+function pv(){ $('#pv .top').style.background=$('#cPrimary').value+'33'; $('#pv .a').style.background=$('#cAccent').value; $('#pv').style.borderTop=`5px solid ${$('#cPrimary').value}`; }
+$('#specs').addEventListener('change',renderServices); ['#cPrimary','#cAccent'].forEach(s=>$(s).addEventListener('input',pv));
+renderServices(); pv(); $('#start').value=new Date(Date.now()+86400000*2).toISOString().slice(0,10);
+function gen(){
+  const name=$('#name').value.trim(); if(!name){$('#msg').textContent='医院名を入力してください';$('#name').focus();return}
+  const specs=$$('#specs input:checked').map(i=>i.value); const goals=$$('#goals input:checked').map(i=>i.value);
+  const services={}; $$('#services .svc').forEach(d=>{ if(d.querySelector('input').checked) services[d.dataset.key]={name:SERVICES.find(s=>s[0]===d.dataset.key)[1],cta:d.nextElementSibling.value.trim()} });
+  const tags=$('#tags').value.split(/\s+/).filter(Boolean).map(t=>t.startsWith('#')?t:'#'+t);
+  const onlyWeb=specs.length===1&&specs[0]==='webmarketing';
+  const cfg={clinic_name:name,clinic_name_short:name,specialties:specs,include_common:!onlyWeb,goals,
+    formats:{reel_weekdays:$$('#reelDays input:checked').map(i=>+i.value)},services,
+    theme:{primary_color:$('#cPrimary').value.toUpperCase(),accent_color:$('#cAccent').value.toUpperCase(),font:$('#fontSel').value},
+    logo_path:"",footer_text:$('#footer').value.trim(),author_label:$('#author').value.trim(),person_image:"",
+    caption:{default_cta:$('#defaultCta').value.trim(),signature:$('#signature').value.trim(),save_cta:"",follow_cta:"",
+      disclaimer:onlyWeb?"":"※ 効果や経過には個人差があります。症状や治療については、必ず医師・歯科医師にご相談ください。",
+      hashtags_fixed:tags,hashtags_max:20,include_specialty_hashtags:true},
+    schedule:{post_weekdays:$$('#days input:checked').map(i=>+i.value),skip_dates:$('#skip').value.split(/[,\s]+/).filter(Boolean),start_date:$('#start').value},
+    ai:{auto_brushup:true,brushup_new_posts:7},
+    image:{ai_illustration:$('#aiIllust').checked,base_url:"",font_candidates:[]}};
+  $('#out').textContent=JSON.stringify(cfg,null,2); $('#msg').textContent='できました。コピーして config/clinic.json に貼り付けてください。';
+}
+function ensure(){ if(!$('#out').textContent.startsWith('{')) gen(); return $('#out').textContent.startsWith('{'); }
+function copyOut(){ if(!ensure())return; navigator.clipboard.writeText($('#out').textContent).then(()=>$('#msg').textContent='コピーしました'); }
+function dl(){ if(!ensure())return; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([$('#out').textContent],{type:'application/json'})); a.download='clinic.json'; a.click(); }
+// ---- レポート
+fetch('report.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(r=>{
+  const b=$('#reportBox'); if(!r||!r.generated_at){b.innerHTML='<span class="small">まだ分析レポートがありません。投稿開始から1〜2週間後、毎週月曜に自動で作成されます。</span>';return}
+  const fh=r.follower_history||[]; const f0=fh[0]?.followers, f1=fh[fh.length-1]?.followers; const fn={image:'1枚画像',carousel:'カルーセル',reel:'リール'};
+  let h=`<div class="small">更新: ${new Date(r.generated_at).toLocaleString('ja-JP')}</div><div class="stat"><div><span class="small">分析した投稿</span><b>${r.analyzed_posts}</b></div><div><span class="small">平均スコア</span><b>${r.mean_score??'-'}</b></div><div><span class="small">フォロワー</span><b>${f1??'-'}</b>${f0!=null&&f1!=null?`<span class="small">（${f1-f0>=0?'+':''}${f1-f0}）</span>`:''}</div></div>`;
+  if(r.tips?.length) h+='<ul>'+r.tips.map(t=>`<li>${t}</li>`).join('')+'</ul>';
+  if(r.ai_brushup?.insights?.length) h+='<p><b>AIの分析メモ</b></p><ul>'+r.ai_brushup.insights.map(t=>`<li>${t}</li>`).join('')+'</ul>';
+  const row=p=>`<tr><td>${p.date}</td><td>${p.permalink?`<a href="${p.permalink}" target="_blank" rel="noopener">${p.title}</a>`:p.title}</td><td>${fn[p.format]||''}</td><td>${p.score}</td><td>${p.reach??'-'}</td><td>${p.saved??'-'}</td></tr>`;
+  if(r.top?.length) h+='<p><b>反応が良かった投稿</b></p><table><tr><th>日付</th><th>タイトル</th><th>形式</th><th>スコア</th><th>リーチ</th><th>保存</th></tr>'+r.top.map(row).join('')+'</table>';
+  if(r.bottom?.length) h+='<p><b>反応が弱かった投稿</b></p><table><tr><th>日付</th><th>タイトル</th><th>形式</th><th>スコア</th><th>リーチ</th><th>保存</th></tr>'+r.bottom.map(row).join('')+'</table>';
+  b.innerHTML=h;
+}).catch(()=>{$('#reportBox').innerHTML='<span class="small">レポートは GitHub Pages 上で表示されます。</span>'});
+</script>
+</body>
+</html>

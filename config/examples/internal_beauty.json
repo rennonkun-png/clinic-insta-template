@@ -1,0 +1,68 @@
+{
+  "_comment": "内科＋美容点滴を始めたクリニック向けの見本。健康情報を発信しつつ、関連する投稿の末尾で美容点滴をご案内します。",
+  "clinic_name": "サンプル内科クリニック",
+  "clinic_name_short": "サンプル内科",
+  "specialties": [
+    "internal",
+    "beauty"
+  ],
+  "goals": [
+    "reach",
+    "acquisition"
+  ],
+  "services": {
+    "beauty_iv": {
+      "name": "美容点滴",
+      "cta": "当院では、ビタミンやアミノ酸などを点滴で補う「美容点滴」も行っています。ここでご紹介したようなケアをまとめてサポートしたい方は、診察時にお気軽にご相談ください（自由診療・費用は院内掲示をご確認ください）。"
+    },
+    "vaccination": {
+      "name": "予防接種"
+    },
+    "health_check": {
+      "name": "健康診断"
+    }
+  },
+  "theme": {
+    "primary_color": "#4A7BA6",
+    "accent_color": "#F6BD60",
+    "font": "gothic"
+  },
+  "logo_path": "",
+  "footer_text": "東京都○○区○○1-2-3 ／ TEL 03-0000-0000",
+  "author_label": "内科医が解説",
+  "person_image": "",
+  "caption": {
+    "default_cta": "",
+    "signature": "ご予約・ご相談はプロフィールのリンクからお気軽にどうぞ。",
+    "save_cta": "",
+    "follow_cta": "",
+    "disclaimer": "※ 効果や経過には個人差があります。症状や治療については、必ず医師にご相談ください。",
+    "hashtags_fixed": [
+      "#サンプル内科",
+      "#○○区内科",
+      "#美容点滴"
+    ],
+    "hashtags_max": 10,
+    "include_specialty_hashtags": true
+  },
+  "schedule": {
+    "post_weekdays": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "skip_dates": [],
+    "start_date": "2026-11-10"
+  },
+  "ai": {
+    "auto_brushup": true,
+    "brushup_new_posts": 7
+  },
+  "image": {
+    "base_url": "",
+    "font_candidates": []
+  }
+}

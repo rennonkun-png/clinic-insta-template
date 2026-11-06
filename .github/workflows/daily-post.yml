@@ -1,0 +1,84 @@
+name: Instagram 毎日自動投稿
+
+on:
+  schedule:
+    # UTC で指定。日本時間 12:00 = UTC 03:00 。変更したい場合はこの行を編集。
+    # 例) 日本時間 18:00 → "0 9 * * *" / 日本時間 9:00 → "0 0 * * *"
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "テスト実行（画像だけ作って投稿しない）"
+        type: boolean
+        default: false
+      force:
+        description: "曜日・スキップ日設定を無視して投稿する"
+        type: boolean
+        default: false
+      format:
+        description: "形式を指定（空なら自動）"
+        type: choice
+        options: ["", "image", "carousel", "reel"]
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 日本語フォント・ffmpeg・ライブラリをインストール
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
+          pip install -q -r requirements.txt
+
+      - name: 公開URLを決定（GitHub Pages）
+        id: pages
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          REPO="${GITHUB_REPOSITORY#*/}"
+          if [ "$REPO" = "${OWNER}.github.io" ]; then
+            echo "url=https://${OWNER}.github.io" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=https://${OWNER}.github.io/${REPO}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 投稿を実行
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          IMAGE_BASE_URL: ${{ steps.pages.outputs.url }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+          FORCE: ${{ inputs.force && '1' || '0' }}
+          FORMAT: ${{ inputs.format }}
+        run: python scripts/main.py
+
+      - name: 生成したメディアを保存（確認用）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-media
+          path: |
+            docs/images/*.jpg
+            docs/images/*.mp4
+            docs/images/latest_caption.txt
+          if-no-files-found: ignore
+          retention-days: 14

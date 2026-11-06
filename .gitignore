@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+config/operator.json
+docs/preview/
+docs/images/frames/

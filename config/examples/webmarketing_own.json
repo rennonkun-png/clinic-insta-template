@@ -1,0 +1,70 @@
+{
+  "_comment": "自社（WEB制作・集患支援）の仕事用アカウント向け設定。クリニック運営に役立つWEB知識を毎日発信し、最後に問い合わせへ誘導します。",
+  "clinic_name": "株式会社○○ クリニックWEB支援",
+  "clinic_name_short": "○○ WEB支援",
+  "specialties": [
+    "webmarketing"
+  ],
+  "include_common": false,
+  "goals": [
+    "reach",
+    "reels",
+    "followers",
+    "acquisition"
+  ],
+  "formats": {
+    "reel_weekdays": [
+      2,
+      5
+    ]
+  },
+  "services": {
+    "web_consulting": {
+      "name": "クリニック向けWEB集患支援",
+      "cta": "こういったWEBに関する情報を、院長先生・ご担当者さまのもとへ直接お届けに参ります。「うちの場合はどうすれば？」というご相談も、DMまたはプロフィールのリンクからお気軽にどうぞ。"
+    }
+  },
+  "theme": {
+    "primary_color": "#1D3557",
+    "accent_color": "#F4A261",
+    "font": "serif"
+  },
+  "logo_path": "",
+  "footer_text": "歯科・医科クリニックのHP制作／MEO／SNS運用支援",
+  "author_label": "クリニック集患の専門家が解説",
+  "person_image": "",
+  "caption": {
+    "default_cta": "こういったWEBに関する情報を、院長先生・ご担当者さまのもとへ直接お届けに参ります。ご相談はDMまたはプロフィールのリンクからお気軽にどうぞ。",
+    "signature": "",
+    "save_cta": "院内で共有できるよう、保存しておくと便利です。",
+    "follow_cta": "フォローすると、クリニックのWEB集患に役立つ知識が毎日届きます。",
+    "disclaimer": "",
+    "hashtags_fixed": [
+      "#クリニック集患",
+      "#歯科医院経営",
+      "#クリニック経営",
+      "#医院ホームページ"
+    ],
+    "hashtags_max": 10,
+    "include_specialty_hashtags": true
+  },
+  "schedule": {
+    "post_weekdays": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "skip_dates": [],
+    "start_date": "2026-11-10"
+  },
+  "ai": {
+    "auto_brushup": true,
+    "brushup_new_posts": 7
+  },
+  "image": {
+    "base_url": "",
+    "font_candidates": []
+  }
+}

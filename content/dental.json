@@ -1,0 +1,1131 @@
+[
+  {
+    "id": "brush-timing",
+    "title": "歯みがきは「食後すぐ」で大丈夫？",
+    "hook": "question",
+    "body": [
+      "食後は口の中が酸性に傾き、歯の表面がやわらかくなっています",
+      "酸っぱいものを食べた直後は、30分ほど待つか水でうがいをしてからみがくのが安心です",
+      "通常の食事なら、食後に早めにみがいて汚れを落とすことが大切とされています",
+      "寝る前のケアがいちばん重要。就寝中は唾液が減り、むし歯菌が活動しやすくなります"
+    ],
+    "hashtags": [
+      "#歯みがき",
+      "#むし歯予防",
+      "#オーラルケア",
+      "#歯の健康"
+    ],
+    "illustration_prompt": "a toothbrush and a glass of water on a bathroom sink beside a small bedside clock showing nighttime"
+  },
+  {
+    "id": "floss-why",
+    "title": "歯ブラシだけでは汚れの6割しか落ちません",
+    "hook": "number",
+    "body": [
+      "歯と歯の間の汚れは、歯ブラシの毛先がほとんど届きません",
+      "デンタルフロスや歯間ブラシを使うと、歯垢の除去率が大きく上がるとされています",
+      "フロスは1日1回、寝る前に。最初は週に数回からでもOK",
+      "歯ぐきから血が出るのは、炎症のサイン。続けると落ち着いてくることが多いです"
+    ],
+    "hashtags": [
+      "#デンタルフロス",
+      "#歯間ブラシ",
+      "#歯周病予防",
+      "#オーラルケア"
+    ],
+    "illustration_prompt": "a roll of dental floss and an interdental brush laid on a folded white towel by a sink"
+  },
+  {
+    "id": "perio-signs",
+    "title": "歯周病のサイン、3つ以上当てはまったら要注意",
+    "hook": "warning",
+    "body": [
+      "朝起きたとき口の中がネバつく",
+      "歯みがきのときに歯ぐきから血が出る",
+      "歯ぐきが赤く腫れている、下がってきた気がする",
+      "口臭を指摘された／歯が長くなったように見える",
+      "歯周病は自覚症状が少なく、気づいたときには進行していることも。定期検診で早めに見つけましょう"
+    ],
+    "hashtags": [
+      "#歯周病",
+      "#歯ぐきの腫れ",
+      "#口臭",
+      "#定期検診"
+    ],
+    "service": "perio",
+    "illustration_prompt": "a soft toothbrush and a hand mirror resting on a wooden bathroom shelf in warm morning light"
+  },
+  {
+    "id": "checkup-interval",
+    "title": "歯科の定期検診、理想の間隔は？",
+    "hook": "question",
+    "body": [
+      "一般的には3〜6か月に1回が目安とされています",
+      "歯周病のリスクが高い方、むし歯になりやすい方は間隔を短めに",
+      "検診では、歯石の除去・むし歯のチェック・みがき残しの確認を行います",
+      "痛くなってから通うより、トラブルを小さいうちに見つけるほうが治療も短くすみます"
+    ],
+    "hashtags": [
+      "#定期検診",
+      "#予防歯科",
+      "#歯のクリーニング",
+      "#歯医者"
+    ],
+    "illustration_prompt": "a small desk calendar and a toothbrush in a ceramic cup on a bright windowsill"
+  },
+  {
+    "id": "sugar-frequency",
+    "title": "むし歯は「甘いものの量」より「回数」",
+    "hook": "myth",
+    "body": [
+      "食べるたびに口の中は酸性になり、歯の表面からミネラルが溶け出します",
+      "だらだら食べ・ちょこちょこ飲みが続くと、歯が修復される時間がなくなります",
+      "おやつは時間を決めて。飲み物は水やお茶を基本に",
+      "食後に水を飲む、キシリトールガムを噛むのも助けになります"
+    ],
+    "hashtags": [
+      "#むし歯予防",
+      "#おやつ",
+      "#キシリトール",
+      "#歯の健康"
+    ],
+    "illustration_prompt": "a cup of green tea and a plate of snacks on a kitchen table with a small kitchen timer"
+  },
+  {
+    "id": "bruxism",
+    "title": "朝、あごがだるい人は「歯ぎしり」かも",
+    "hook": "question",
+    "body": [
+      "睡眠中の歯ぎしり・くいしばりは自分では気づきにくいものです",
+      "歯のすり減り、知覚過敏、詰め物がよく外れる、肩こりなどにつながることがあります",
+      "ストレスや噛み合わせが関係しているといわれています",
+      "就寝時に装着するマウスピース（ナイトガード）で歯を守る方法があります"
+    ],
+    "hashtags": [
+      "#歯ぎしり",
+      "#くいしばり",
+      "#マウスピース",
+      "#知覚過敏"
+    ],
+    "illustration_prompt": "a clear night guard in an open case on a nightstand beside a dim bedside lamp and pillow"
+  },
+  {
+    "id": "sensitive-teeth",
+    "title": "冷たいものがしみる…知覚過敏の原因3つ",
+    "hook": "number",
+    "body": [
+      "力の入れすぎた歯みがきで、歯の根元が削れている",
+      "歯周病や加齢で歯ぐきが下がり、根の部分が露出している",
+      "歯ぎしりや酸性の飲食物で、表面のエナメル質がすり減っている",
+      "知覚過敏用の歯みがき粉や、歯科でのコーティングで和らぐことがあります。むし歯が隠れていることもあるので一度ご相談を"
+    ],
+    "hashtags": [
+      "#知覚過敏",
+      "#歯がしみる",
+      "#歯みがき",
+      "#歯の健康"
+    ],
+    "illustration_prompt": "a glass of iced water with condensation and a scoop of ice cream on a cafe table"
+  },
+  {
+    "id": "bad-breath",
+    "title": "口臭の原因の約9割は「口の中」にあります",
+    "hook": "number",
+    "body": [
+      "舌の表面の汚れ（舌苔）、歯周病、むし歯、歯垢が主な原因です",
+      "朝起きたときの口臭は、睡眠中に唾液が減るため誰にでも起こります",
+      "舌は専用の舌ブラシでやさしく。1日1回で十分です",
+      "対策しても気になる場合は、歯周病などが隠れていることがあります"
+    ],
+    "hashtags": [
+      "#口臭",
+      "#口臭対策",
+      "#舌ブラシ",
+      "#歯周病"
+    ],
+    "illustration_prompt": "a tongue scraper and a glass of water on a white bathroom counter in soft morning light"
+  },
+  {
+    "id": "whitening-basics",
+    "title": "歯の黄ばみ、原因は2種類あります",
+    "hook": "number",
+    "body": [
+      "①着色汚れ：コーヒー・お茶・ワイン・タバコなどが表面に付くもの。クリーニングで落ちます",
+      "②歯そのものの色：加齢や体質で内側の象牙質の色が濃くなるもの。クリーニングでは変わりません",
+      "市販の歯みがき粉で落とせるのは主に①の表面汚れです",
+      "②を白くしたい場合は、歯科で行うホワイトニングという選択肢があります"
+    ],
+    "hashtags": [
+      "#歯の黄ばみ",
+      "#ホワイトニング",
+      "#歯のクリーニング",
+      "#白い歯"
+    ],
+    "service": "whitening",
+    "illustration_prompt": "a cup of black coffee, a glass of red wine, and a teacup leaving faint rings on a wooden table"
+  },
+  {
+    "id": "whitening-types",
+    "title": "ホワイトニングの種類と向いている人",
+    "hook": "howto",
+    "body": [
+      "オフィス：歯科で行う。短期間で白くしたい方向け",
+      "ホーム：マウスピースと薬剤を使って自宅で。自分のペースで進めたい方向け",
+      "デュアル：両方を組み合わせ。白さを長持ちさせたい方向け",
+      "効果の出方や持続期間には個人差があり、むし歯や歯周病がある場合は先に治療が必要です"
+    ],
+    "hashtags": [
+      "#ホワイトニング",
+      "#オフィスホワイトニング",
+      "#ホームホワイトニング",
+      "#白い歯"
+    ],
+    "service": "whitening",
+    "illustration_prompt": "a custom whitening tray in a small case beside a gel syringe on a tidy bathroom shelf"
+  },
+  {
+    "id": "whitening-after",
+    "title": "ホワイトニング後24時間、避けたい飲食物",
+    "hook": "warning",
+    "body": [
+      "コーヒー・紅茶・赤ワイン・カレー・しょうゆなど色の濃いもの",
+      "施術直後は歯の表面が着色しやすい状態になっています",
+      "水・牛乳・白米・鶏肉など、色の薄いものが安心です",
+      "一時的に歯がしみることがありますが、通常は数日で落ち着きます"
+    ],
+    "hashtags": [
+      "#ホワイトニング",
+      "#ホワイトニング後",
+      "#白い歯",
+      "#着色"
+    ],
+    "service": "whitening",
+    "illustration_prompt": "a plate of white rice, grilled chicken and a glass of milk on a clean white tablecloth"
+  },
+  {
+    "id": "ceramic-vs-metal",
+    "title": "銀歯とセラミック、何が違う？",
+    "hook": "question",
+    "body": [
+      "銀歯は保険適用で費用を抑えられますが、年数が経つと金属が溶け出して歯ぐきが黒ずむことがあります",
+      "セラミックは天然の歯に近い色で、汚れが付きにくく、金属アレルギーの心配がありません",
+      "一方で自由診療のため費用がかかり、強い衝撃で欠けることもあります",
+      "どちらが合うかは、歯の場所・噛む力・ご予算で変わります"
+    ],
+    "hashtags": [
+      "#セラミック",
+      "#銀歯",
+      "#詰め物",
+      "#被せ物"
+    ],
+    "service": "ceramic",
+    "illustration_prompt": "a white ceramic tooth crown and a silver metal crown side by side on a soft blue cloth"
+  },
+  {
+    "id": "ceramic-secondary-caries",
+    "title": "詰め物の下でむし歯が再発する理由",
+    "hook": "warning",
+    "body": [
+      "詰め物と歯のすき間にできる「二次むし歯」は、大人のむし歯で多いパターンです",
+      "金属は温度で伸び縮みするため、長年使うとすき間ができやすいといわれています",
+      "セラミックは歯との接着が良く、すき間ができにくい素材とされています",
+      "古い詰め物は、見た目に問題がなくても定期検診でチェックを"
+    ],
+    "hashtags": [
+      "#二次カリエス",
+      "#詰め物",
+      "#セラミック",
+      "#むし歯"
+    ],
+    "service": "ceramic",
+    "illustration_prompt": "a close-up of a single ceramic inlay on a velvet tray under gentle studio light"
+  },
+  {
+    "id": "ortho-adult",
+    "title": "矯正は大人になってからでも遅くない？",
+    "hook": "question",
+    "body": [
+      "歯と歯ぐきが健康であれば、年齢に上限はありません",
+      "大人の矯正は、見た目だけでなく「みがきやすくなり、むし歯・歯周病を防ぎやすくなる」のも利点です",
+      "目立ちにくいマウスピース型や、裏側に装置をつける方法もあります",
+      "期間や費用は歯並びの状態で大きく変わるため、まずは相談から"
+    ],
+    "hashtags": [
+      "#大人の矯正",
+      "#歯列矯正",
+      "#マウスピース矯正",
+      "#歯並び"
+    ],
+    "service": "orthodontics",
+    "illustration_prompt": "a clear aligner in its case on an office desk next to a laptop and a cup of coffee"
+  },
+  {
+    "id": "ortho-crowding",
+    "title": "歯並びが悪いと起こりやすい3つのこと",
+    "hook": "number",
+    "body": [
+      "歯が重なった部分に汚れがたまり、むし歯・歯周病のリスクが上がる",
+      "噛み合わせの偏りで、一部の歯に負担が集中する",
+      "発音・咀嚼のしにくさ、口が閉じにくいことによる口の乾燥",
+      "「気になるけど今は困っていない」段階でも、将来を考えて相談しておくと選択肢が広がります"
+    ],
+    "hashtags": [
+      "#歯並び",
+      "#歯列矯正",
+      "#噛み合わせ",
+      "#矯正相談"
+    ],
+    "service": "orthodontics",
+    "illustration_prompt": "a dental model of crowded teeth resting on a bright wooden desk beside a toothbrush and floss"
+  },
+  {
+    "id": "kids-ortho-timing",
+    "title": "子どもの矯正、相談のタイミングは？",
+    "hook": "question",
+    "body": [
+      "6〜8歳ごろ（前歯が永久歯に生え変わる時期）に一度見てもらうのがおすすめです",
+      "成長期ならあごの成長を利用して、歯を抜かずに済む可能性が高まります",
+      "指しゃぶり・口呼吸・舌の癖は歯並びに影響することがあります",
+      "すぐ装置をつけるとは限らず、「経過観察」という判断も多いです"
+    ],
+    "hashtags": [
+      "#小児矯正",
+      "#子どもの歯並び",
+      "#こどもの歯",
+      "#矯正相談"
+    ],
+    "service": "orthodontics",
+    "illustration_prompt": "a child's lost baby tooth in a tiny keepsake box on a wooden table with crayons nearby"
+  },
+  {
+    "id": "implant-basics",
+    "title": "歯を失ったときの3つの選択肢",
+    "hook": "number",
+    "body": [
+      "ブリッジ：両隣の歯を削って橋をかける。固定式で違和感が少ない",
+      "入れ歯：取り外し式。隣の歯を削る量が少ないが、慣れが必要",
+      "インプラント：あごの骨に人工の根を埋める。自分の歯に近い感覚で噛めるが自由診療で手術が必要",
+      "それぞれに向き不向きがあり、全身の状態や骨の量も関係します"
+    ],
+    "hashtags": [
+      "#インプラント",
+      "#ブリッジ",
+      "#入れ歯",
+      "#歯を失った"
+    ],
+    "service": "implant",
+    "illustration_prompt": "a dental implant model, a bridge model, and a partial denture arranged on a calm blue cloth"
+  },
+  {
+    "id": "kids-first-visit",
+    "title": "子どもの初めての歯医者、いつから？",
+    "hook": "question",
+    "body": [
+      "歯が生え始める生後6か月〜1歳ごろに一度来ていただくのがおすすめです",
+      "初回は「お口を見せる練習」。椅子に座れただけでも立派な一歩です",
+      "むし歯のない時期から通うことで、歯医者＝怖い場所にならずにすみます",
+      "フッ素塗布や仕上げみがきのコツもお伝えします"
+    ],
+    "hashtags": [
+      "#小児歯科",
+      "#こどもの歯",
+      "#仕上げみがき",
+      "#フッ素"
+    ],
+    "service": "pediatric_dental",
+    "illustration_prompt": "a tiny baby toothbrush and a soft stuffed toy on a pastel changing table in a nursery"
+  },
+  {
+    "id": "kids-finishing-brush",
+    "title": "仕上げみがき、いつまで続ける？",
+    "hook": "question",
+    "body": [
+      "目安は小学校低学年（8〜10歳ごろ）まで",
+      "6歳臼歯（奥に生える最初の永久歯）は背が低く、みがき残しが多い歯です",
+      "寝かせみがきで、奥歯の溝と歯と歯ぐきの境目を意識して",
+      "嫌がるときは短時間でOK。「毎日続ける」ことが大切です"
+    ],
+    "hashtags": [
+      "#仕上げみがき",
+      "#こどもの歯",
+      "#小児歯科",
+      "#6歳臼歯"
+    ],
+    "service": "pediatric_dental",
+    "illustration_prompt": "a small children's toothbrush and a larger adult toothbrush in a cup by a bathroom step stool"
+  },
+  {
+    "id": "mouth-breathing",
+    "title": "口呼吸が歯に悪い理由",
+    "hook": "warning",
+    "body": [
+      "口の中が乾くと、唾液による洗浄・殺菌作用が弱まります",
+      "むし歯・歯周病・口臭のリスクが上がるといわれています",
+      "子どもの場合、歯並びやあごの発育に影響することも",
+      "寝ているときに口が開いている、朝のどが乾くという方は要チェック"
+    ],
+    "hashtags": [
+      "#口呼吸",
+      "#鼻呼吸",
+      "#口の乾燥",
+      "#歯の健康"
+    ],
+    "illustration_prompt": "a pillow and blanket on a neatly made bed with a glass of water on the nightstand at dawn"
+  },
+  {
+    "id": "dry-mouth",
+    "title": "口が乾きやすい人の対策",
+    "hook": "howto",
+    "body": [
+      "こまめな水分補給。カフェインやアルコールは乾燥を進めることがあります",
+      "よく噛んで食べる、ガムを噛むなどで唾液の分泌を促す",
+      "薬の副作用で乾くこともあるため、お薬手帳をご持参ください",
+      "口の乾燥が続くと、むし歯や口内炎が増えやすくなります"
+    ],
+    "hashtags": [
+      "#ドライマウス",
+      "#口の乾燥",
+      "#唾液",
+      "#オーラルケア"
+    ],
+    "illustration_prompt": "a water bottle and a pack of sugar-free gum on a kitchen counter by a sunny window"
+  },
+  {
+    "id": "wisdom-tooth",
+    "title": "親知らず、抜くべき？残すべき？",
+    "hook": "question",
+    "body": [
+      "まっすぐ生えて、きちんとみがけていれば、必ず抜く必要はありません",
+      "斜めや横向きに生えている、手前の歯を押している、腫れを繰り返す場合は抜歯を検討します",
+      "レントゲンで根の形や神経との位置関係を確認して判断します",
+      "妊娠を考えている方は、事前にチェックしておくと安心です"
+    ],
+    "hashtags": [
+      "#親知らず",
+      "#抜歯",
+      "#歯科相談",
+      "#歯の健康"
+    ],
+    "illustration_prompt": "a dental panoramic x-ray film lying on a desk next to a pair of glasses and a pen"
+  },
+  {
+    "id": "toothbrush-replace",
+    "title": "歯ブラシの交換目安は「1か月」",
+    "hook": "number",
+    "body": [
+      "毛先が開くと、歯垢を落とす力が大きく下がります",
+      "後ろから見て毛先がはみ出していたら交換のサイン",
+      "やわらかめ〜ふつうの硬さ、ヘッドは小さめがおすすめです",
+      "電動歯ブラシも替えブラシの交換を忘れずに"
+    ],
+    "hashtags": [
+      "#歯ブラシ",
+      "#歯ブラシ交換",
+      "#歯みがき",
+      "#オーラルケア"
+    ],
+    "illustration_prompt": "a toothbrush with frayed, splayed bristles next to a brand-new toothbrush on a bathroom shelf"
+  },
+  {
+    "id": "pregnancy-dental",
+    "title": "妊娠中の歯のケア、知っておきたいこと",
+    "hook": "howto",
+    "body": [
+      "ホルモンの変化で歯ぐきが腫れやすくなります（妊娠性歯肉炎）",
+      "つわりで歯みがきがつらいときは、小さいヘッドの歯ブラシやうがいで対応",
+      "安定期（5〜7か月）は治療を受けやすい時期です",
+      "歯周病は早産・低体重児出産との関連が指摘されています。妊婦歯科健診をご活用ください"
+    ],
+    "hashtags": [
+      "#妊婦歯科健診",
+      "#妊娠中の歯",
+      "#マタニティ",
+      "#歯周病"
+    ],
+    "illustration_prompt": "a soft small-headed toothbrush, a mug of herbal tea, and a pair of baby socks on a sunlit table"
+  },
+  {
+    "id": "denture-care",
+    "title": "入れ歯は「歯みがき粉」で洗わないで",
+    "hook": "warning",
+    "body": [
+      "入れ歯の表面は歯より傷つきやすく、歯みがき粉の研磨剤で細かい傷ができます",
+      "傷に汚れや細菌が入り込み、ニオイや口内炎の原因になることがあります",
+      "毎食後に水で流し、1日1回は入れ歯用ブラシと洗浄剤でお手入れを",
+      "寝るときは外して水に浸けておくのが一般的です。合わなくなったら削らず歯科へ"
+    ],
+    "hashtags": [
+      "#入れ歯",
+      "#入れ歯のお手入れ",
+      "#高齢者の口腔ケア",
+      "#義歯"
+    ],
+    "illustration_prompt": "a full denture soaking in a clear glass of water beside a denture brush on a bathroom counter"
+  },
+  {
+    "id": "aspiration-pneumonia",
+    "title": "お口のケアが「肺炎予防」になる理由",
+    "hook": "question",
+    "body": [
+      "高齢の方の肺炎の多くは、唾液や食べ物が気管に入る「誤嚥」がきっかけとされています",
+      "口の中の細菌が多いほど、誤嚥したときに肺炎を起こしやすくなります",
+      "歯みがき・舌の清掃・入れ歯の洗浄で細菌を減らすことが予防につながると報告されています",
+      "むせやすい、食事に時間がかかるといった変化があれば、早めにご相談ください"
+    ],
+    "hashtags": [
+      "#誤嚥性肺炎",
+      "#口腔ケア",
+      "#高齢者の健康",
+      "#介護"
+    ],
+    "illustration_prompt": "an elderly person's hands holding a toothbrush cup and a soft sponge brush at a kitchen table"
+  },
+  {
+    "id": "oral-frailty",
+    "title": "「オーラルフレイル」、5つのチェック",
+    "hook": "number",
+    "body": [
+      "①硬いものが食べにくくなった ②お茶や汁物でむせる ③口が乾く",
+      "④話すときに舌がもつれる ⑤自分の歯が少なくなった",
+      "口の機能の衰えは、食欲や筋力の低下につながるといわれています",
+      "早い段階なら、食べ方の工夫や口の体操で改善が期待できます。検診時にご相談ください"
+    ],
+    "hashtags": [
+      "#オーラルフレイル",
+      "#高齢者の口腔ケア",
+      "#噛む力",
+      "#健康寿命"
+    ],
+    "illustration_prompt": "a bowl of warm soup, a cup of tea, and a pair of hands holding a spoon at a wooden table"
+  },
+  {
+    "id": "tooth-knocked-out",
+    "title": "歯が抜け落ちたら「水で洗わない」",
+    "hook": "howto",
+    "body": [
+      "転倒やボールの衝突で歯が抜けたら、根の部分を触らずに拾います",
+      "汚れていても水道水で洗わず、牛乳か、学校なら保存液に浸けて持参してください",
+      "乾燥させないことが大切。何もなければ口の中（ほおの内側）に入れて運びます",
+      "早く処置するほど元に戻る可能性が高まります。できるだけ早く歯科へ"
+    ],
+    "hashtags": [
+      "#歯の外傷",
+      "#応急処置",
+      "#こどもの歯",
+      "#歯が抜けた"
+    ],
+    "illustration_prompt": "a small glass of milk on a kitchen counter next to a soccer ball and a child's bicycle helmet"
+  },
+  {
+    "id": "filling-came-off",
+    "title": "詰め物が取れた！やってはいけない3つ",
+    "hook": "warning",
+    "body": [
+      "①自分で接着剤でつける ②取れた側で硬いものを噛む ③痛くないからと放置する",
+      "詰め物が取れた歯はやわらかい部分が露出し、むし歯が進みやすい状態です",
+      "取れた詰め物は捨てずに、小さな袋などに入れて持ってきてください",
+      "数日以内の受診が目安。しみる・痛むときはできるだけ早くご連絡ください"
+    ],
+    "hashtags": [
+      "#詰め物が取れた",
+      "#被せ物",
+      "#応急処置",
+      "#むし歯"
+    ],
+    "illustration_prompt": "a small dental filling placed in a tiny zip bag on a kitchen table next to a phone"
+  },
+  {
+    "id": "mouthguard-sports",
+    "title": "スポーツ中の歯のケガ、マウスガードで防げる？",
+    "hook": "question",
+    "body": [
+      "ボールや人との接触が多い競技では、歯の破折や脱落が起こりやすいとされています",
+      "マウスガードは衝撃をやわらげ、歯やあご、口の中のケガを減らす目的で使われます",
+      "市販品は合わないとずれて逆に危険なことも。歯科で型を取ると、ぴったりに作れます",
+      "成長期のお子さまは歯の生え変わりで合わなくなるため、定期的な確認が必要です"
+    ],
+    "hashtags": [
+      "#マウスガード",
+      "#スポーツ歯科",
+      "#歯の外傷",
+      "#部活"
+    ],
+    "illustration_prompt": "a mouthguard resting on a sports towel beside a soccer ball on a grassy field"
+  },
+  {
+    "id": "tmj-disorder",
+    "title": "口を開けると「カクッ」と音がする方へ",
+    "hook": "warning",
+    "body": [
+      "あごの音・口が開きにくい・あごの痛みは、顎関節症（がくかんせつしょう）の代表的な症状です",
+      "原因はひとつではなく、くいしばり・姿勢・ストレス・噛み合わせなどが重なるとされています",
+      "音だけで痛みがなければ、経過を見ることも多いです",
+      "痛みが続く、指3本分（約4cm）口が開かないときは一度ご相談ください"
+    ],
+    "hashtags": [
+      "#顎関節症",
+      "#あごの痛み",
+      "#くいしばり",
+      "#噛み合わせ"
+    ],
+    "illustration_prompt": "a warm towel folded on a wooden tray beside a cup of tea and a bowl of soft porridge"
+  },
+  {
+    "id": "canker-sore",
+    "title": "口内炎が2週間治らないときは受診を",
+    "hook": "warning",
+    "body": [
+      "一般的な口内炎は、1〜2週間ほどで自然に治ることが多いとされています",
+      "ビタミン不足・疲れ・口の中の傷・歯や入れ歯のとがった部分が原因になります",
+      "刺激の強い食べ物を控え、口の中を清潔に保つと治りを助けます",
+      "2週間以上治らない、同じ場所に繰り返す、しこりがある場合は別の病気の可能性も。早めに受診を"
+    ],
+    "hashtags": [
+      "#口内炎",
+      "#口の中の痛み",
+      "#口腔外科",
+      "#歯科相談"
+    ],
+    "illustration_prompt": "a bowl of mild vegetable soup, a glass of water and a small plate of bananas on a table"
+  },
+  {
+    "id": "dental-fear",
+    "title": "「歯医者が怖い」と言ってもいいんです",
+    "hook": "story",
+    "body": [
+      "歯科が苦手な方は多く、怖さから足が遠のくうちに症状が進んでしまうことがあります",
+      "音・においが苦手、以前の経験がつらかったなど、理由はさまざまです",
+      "最初に「怖いです」と伝えていただければ、説明の仕方や進め方を一緒に調整できます",
+      "初回は相談や検査だけでも大丈夫。一歩目は「話を聞きに行く」で十分です"
+    ],
+    "hashtags": [
+      "#歯科恐怖症",
+      "#歯医者が苦手",
+      "#歯医者",
+      "#はじめての歯医者"
+    ],
+    "illustration_prompt": "a cozy dental clinic waiting room with soft chairs, a green plant and sunlight through a window"
+  },
+  {
+    "id": "checkup-contents",
+    "title": "定期検診の60分、実は何をしている？",
+    "hook": "howto",
+    "body": [
+      "①問診：痛みやしみる場所、生活の変化をお聞きします",
+      "②検査：むし歯・歯ぐきの状態（歯周ポケットの深さ）・みがき残しを確認",
+      "③クリーニング：歯ブラシで落ちない歯石や着色を専用の器具で除去",
+      "④アドバイス：みがき方のコツや、次回までの注意点をお伝えします。所要時間は内容で前後します"
+    ],
+    "hashtags": [
+      "#定期検診",
+      "#歯のクリーニング",
+      "#予防歯科",
+      "#歯科衛生士"
+    ],
+    "illustration_prompt": "a dental mirror, a scaler, and a polishing cup neatly laid on a tray in a bright, calm clinic room"
+  },
+  {
+    "id": "xray-safety",
+    "title": "歯のレントゲン、被ばくは心配ない？",
+    "hook": "myth",
+    "body": [
+      "歯科の小さなレントゲン1枚の線量は、日常生活で自然に受ける放射線の数日分程度とされています",
+      "撮影時は防護エプロンを着け、必要な範囲だけを撮影します",
+      "目に見えない歯と歯の間のむし歯や、根の先の病気を見つけるために欠かせない検査です",
+      "妊娠中や心配なことがある方は、遠慮なくお伝えください。撮影時期を調整できます"
+    ],
+    "hashtags": [
+      "#歯科レントゲン",
+      "#被ばく",
+      "#歯科検査",
+      "#安心して通える歯医者"
+    ],
+    "illustration_prompt": "a lead protective apron folded on a chair in a quiet dental x-ray room with soft lighting"
+  },
+  {
+    "id": "fluoride-myth",
+    "title": "「フッ素は体に悪い」は本当？",
+    "hook": "myth",
+    "body": [
+      "フッ素（フッ化物）は歯の表面を強くし、むし歯の予防に役立つことが多くの研究で示されています",
+      "歯みがき粉に含まれる量は少なく、通常の使用で健康に影響する心配はないとされています",
+      "日本では年齢に応じた濃度と使用量が推奨されています（6歳以上は1,400〜1,500ppmが目安）",
+      "使用量が気になる方は、お子さまの年齢に合わせた目安を検診でお伝えします"
+    ],
+    "hashtags": [
+      "#フッ素",
+      "#むし歯予防",
+      "#歯みがき粉",
+      "#予防歯科"
+    ],
+    "illustration_prompt": "a tube of fluoride toothpaste with a pea-sized dab on a children's toothbrush by a sink"
+  },
+  {
+    "id": "baby-teeth-cavity",
+    "title": "乳歯のむし歯「生え変わるから大丈夫」？",
+    "hook": "myth",
+    "body": [
+      "乳歯のむし歯は進みが早く、下で育っている永久歯に影響することがあります",
+      "痛みでよく噛めないと、あごの発達や食習慣にも関わります",
+      "早く抜けてしまうと、永久歯の生えるスペースがずれて歯並びに影響することも",
+      "乳歯は白く濁った部分や黒い点から始まることが多いので、仕上げみがきのときに観察を"
+    ],
+    "hashtags": [
+      "#乳歯",
+      "#こどものむし歯",
+      "#小児歯科",
+      "#仕上げみがき"
+    ],
+    "illustration_prompt": "a child's row of small baby teeth model next to a tiny toothbrush and a cup on a pastel shelf"
+  },
+  {
+    "id": "kids-sweet-drinks",
+    "title": "「飲み物」のむし歯、見落としがちです",
+    "hook": "warning",
+    "body": [
+      "ジュース・スポーツドリンク・乳酸菌飲料には、思った以上の糖分が含まれています",
+      "哺乳びんやストローマグで長時間飲み続けると、前歯のむし歯につながりやすくなります",
+      "のどが渇いたときは水やお茶を基本に。甘い飲み物は食事やおやつの時間にまとめて",
+      "寝る前のミルクのあとは、ガーゼで歯をぬぐうだけでも違います"
+    ],
+    "hashtags": [
+      "#こどものむし歯",
+      "#ジュース",
+      "#小児歯科",
+      "#おやつ"
+    ],
+    "illustration_prompt": "a baby bottle, a straw sippy cup and a glass of water lined up on a kitchen high chair tray"
+  },
+  {
+    "id": "sleep-apnea-mouthpiece",
+    "title": "いびきの相談、歯科でもできます",
+    "hook": "question",
+    "body": [
+      "睡眠時無呼吸症候群は、眠っている間に呼吸が止まり、日中の強い眠気や高血圧につながる病気です",
+      "医科で診断を受けたあと、軽症〜中等症の方には歯科で作るマウスピース治療が選択肢になります",
+      "下あごを少し前に出した位置で固定し、のどの空気の通り道を確保する仕組みです",
+      "大きないびき、起床時の頭痛、日中の眠気がある方は、まず医科での検査をおすすめします"
+    ],
+    "hashtags": [
+      "#睡眠時無呼吸症候群",
+      "#いびき",
+      "#マウスピース",
+      "#睡眠"
+    ],
+    "service": "sleep_apnea",
+    "illustration_prompt": "a sleep apnea mouthpiece in its case on a nightstand beside a sleeping mask and a dim lamp"
+  },
+  {
+    "id": "perio-systemic",
+    "title": "歯周病が関わるとされる全身の病気",
+    "hook": "number",
+    "body": [
+      "①糖尿病：歯周病の治療で血糖の指標が改善したという報告があります",
+      "②心臓や血管の病気：歯周病菌が血管に入り、動脈硬化との関連が指摘されています",
+      "③誤嚥性肺炎、早産・低体重児出産との関連も研究されています",
+      "歯ぐきの出血や腫れは全身の健康にもつながるサイン。放置せず、まずは検診へ"
+    ],
+    "hashtags": [
+      "#歯周病",
+      "#糖尿病",
+      "#全身の健康",
+      "#歯周病治療"
+    ],
+    "service": "perio",
+    "illustration_prompt": "a stethoscope, a glucose meter and a toothbrush arranged together on a soft white cloth"
+  },
+  {
+    "id": "implant-maintenance",
+    "title": "インプラントも「歯周病」になります",
+    "hook": "warning",
+    "body": [
+      "インプラント周囲炎は、人工の歯の周りの歯ぐきや骨に炎症が起こる病気です",
+      "自分の歯より症状に気づきにくく、進むと骨が溶けてぐらつくことがあります",
+      "毎日の歯みがきと、歯科での定期的なクリーニングが長持ちの条件とされています",
+      "治療が終わったあとも、3〜6か月ごとのメインテナンスを続けましょう"
+    ],
+    "hashtags": [
+      "#インプラント",
+      "#インプラント周囲炎",
+      "#メインテナンス",
+      "#定期検診"
+    ],
+    "service": "implant",
+    "illustration_prompt": "a single-tuft toothbrush, floss and an interdental brush beside a dental implant model on a shelf"
+  },
+  {
+    "id": "ceramic-care",
+    "title": "セラミックを長持ちさせる3つの習慣",
+    "hook": "number",
+    "body": [
+      "①歯ぎしり・くいしばりがある方はナイトガードで欠けを防ぐ",
+      "②セラミックと歯の境目を、フロスでていねいに清掃する",
+      "③氷や硬いせんべいを前歯で噛み切るなどの強い力を避ける",
+      "セラミック自体はむし歯になりませんが、境目の歯はなります。定期検診で状態を確認しましょう"
+    ],
+    "hashtags": [
+      "#セラミック",
+      "#被せ物",
+      "#ナイトガード",
+      "#メインテナンス"
+    ],
+    "service": "ceramic",
+    "illustration_prompt": "a night guard, dental floss and a bowl of hard rice crackers on a kitchen counter"
+  },
+  {
+    "id": "whitening-safety",
+    "title": "ホワイトニングで歯は弱くなる？",
+    "hook": "myth",
+    "body": [
+      "歯科で使う薬剤は、歯の内部の色素を分解して白くする仕組みで、歯を削るものではありません",
+      "適切な濃度・時間で行えば、歯の硬さや構造に影響しないとされています",
+      "一時的なしみる感じが出ることはありますが、多くは数日で落ち着きます",
+      "むし歯や歯のひびがある場合は先に治療が必要なため、事前の検査が欠かせません"
+    ],
+    "hashtags": [
+      "#ホワイトニング",
+      "#白い歯",
+      "#ホワイトニングの疑問",
+      "#歯の健康"
+    ],
+    "service": "whitening",
+    "illustration_prompt": "a glass of water and a whitening tray on a bathroom counter next to a soft toothbrush"
+  },
+  {
+    "id": "ortho-aligner-hours",
+    "title": "マウスピース矯正、1日20時間の壁",
+    "hook": "number",
+    "body": [
+      "マウスピース型の矯正装置は、1日20〜22時間の装着が目安とされています",
+      "外せるのは食事と歯みがきのとき。つけ忘れが続くと計画どおりに歯が動きません",
+      "装着したまま飲めるのは基本的に水だけ。甘い飲み物はむし歯の原因になります",
+      "「外す時間が多くなりそう」という方は、ワイヤー矯正など別の方法も含めてご相談を"
+    ],
+    "hashtags": [
+      "#マウスピース矯正",
+      "#歯列矯正",
+      "#矯正中の生活",
+      "#歯並び"
+    ],
+    "service": "orthodontics",
+    "illustration_prompt": "a clear aligner in its case on a lunch table beside a glass of water and a wristwatch"
+  },
+  {
+    "id": "kids-sealant",
+    "title": "6歳臼歯を守る「シーラント」とは",
+    "hook": "howto",
+    "body": [
+      "シーラントは、奥歯の深い溝をあらかじめ樹脂でふさいでむし歯を防ぐ処置です",
+      "削らずに行え、生えたばかりの永久歯に特に有効とされています",
+      "対象は主に奥歯の噛む面。欠けたり取れたりすることがあるため、検診で確認します",
+      "フッ素塗布や仕上げみがきと組み合わせると、予防効果が高まるといわれています"
+    ],
+    "hashtags": [
+      "#シーラント",
+      "#6歳臼歯",
+      "#小児歯科",
+      "#むし歯予防"
+    ],
+    "service": "pediatric_dental",
+    "illustration_prompt": "a dental model of a molar with deep grooves on a tray beside a small brush in a kids clinic"
+  },
+  {
+    "id": "acid-erosion",
+    "title": "炭酸水・お酢・レモンで歯が溶ける？",
+    "hook": "question",
+    "months": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "body": [
+      "酸性の飲食物をひんぱんにとると、歯の表面が溶ける「酸蝕症（さんしょくしょう）」が起こることがあります",
+      "むし歯菌とは関係なく、酸そのものが原因。健康のための黒酢やレモン水でも起こります",
+      "飲んだあとは水で口をすすぐ。ちびちび飲み続けないのがポイントです",
+      "酸性のものを口にした直後の強い歯みがきは避け、少し時間をおいてから"
+    ],
+    "hashtags": [
+      "#酸蝕症",
+      "#炭酸水",
+      "#歯が溶ける",
+      "#歯の健康"
+    ],
+    "illustration_prompt": "a glass of sparkling water, a sliced lemon and a bottle of vinegar on a wooden kitchen table"
+  },
+  {
+    "id": "summer-sports-drink",
+    "title": "夏のスポーツドリンク、歯への影響は？",
+    "hook": "warning",
+    "months": [
+      7,
+      8
+    ],
+    "body": [
+      "スポーツドリンクは糖分が多く酸性のため、むし歯と酸蝕症のどちらにもつながりやすい飲み物です",
+      "部活や外遊びで長時間ちびちび飲むと、歯が修復される時間がなくなります",
+      "汗をかく場面で必要なときは、飲んだあとに水をひと口。普段の水分補給は水や麦茶で",
+      "熱中症対策は大切。飲み方を工夫しながら、歯も一緒に守りましょう"
+    ],
+    "hashtags": [
+      "#スポーツドリンク",
+      "#夏のむし歯",
+      "#こどもの歯",
+      "#熱中症対策"
+    ],
+    "illustration_prompt": "a sports drink bottle and a water bottle on a sunny baseball field bench next to a cap"
+  },
+  {
+    "id": "new-year-tooth-trouble",
+    "title": "年末年始に多い歯のトラブル3つ",
+    "hook": "number",
+    "months": [
+      12,
+      1
+    ],
+    "body": [
+      "①お餅やおせちで詰め物・被せ物が外れる ②疲れで歯ぐきが腫れる ③親知らずの痛み",
+      "休診中に困らないよう、気になる歯は年内の早めの受診がおすすめです",
+      "外れた詰め物は保管し、腫れたときはその部分を清潔にして冷やしすぎないように",
+      "強い痛みや腫れが引かないときは、地域の休日歯科診療所をご利用ください"
+    ],
+    "hashtags": [
+      "#年末年始",
+      "#歯のトラブル",
+      "#休日診療",
+      "#詰め物が取れた"
+    ],
+    "illustration_prompt": "a plate of grilled mochi rice cakes and a cup of tea on a table with pine new year decorations"
+  },
+  {
+    "id": "winter-tooth-pain",
+    "title": "寒い日に歯が痛むのはなぜ？",
+    "hook": "story",
+    "months": [
+      12,
+      1,
+      2
+    ],
+    "body": [
+      "冷たい空気を吸い込むことで、知覚過敏やむし歯の症状が出やすくなります",
+      "寒さで体がこわばり、無意識のくいしばりが増えて歯やあごが痛むこともあります",
+      "風邪や副鼻腔炎（鼻の奥の炎症）で、上の奥歯が痛むように感じることも",
+      "マスクで冷気をやわらげるのもひとつ。痛みが続くときは原因を調べましょう"
+    ],
+    "hashtags": [
+      "#歯が痛い",
+      "#知覚過敏",
+      "#冬の健康",
+      "#くいしばり"
+    ],
+    "illustration_prompt": "a scarf and a knit mask hanging by a frosty window with a steaming mug of tea on the sill"
+  },
+  {
+    "id": "spring-new-start",
+    "title": "新生活の前に、歯の「現状確認」",
+    "hook": "story",
+    "months": [
+      3,
+      4
+    ],
+    "body": [
+      "進学・就職・転居の前は、歯科に通いやすい最後のタイミングになることが多いです",
+      "治療が途中の歯は、環境が変わると後回しになりがち。区切りをつけておきましょう",
+      "新しい土地でも検診を続けられるよう、治療の記録をお渡しすることもできます",
+      "親知らずが気になる方は、長期休みの間に相談しておくと安心です"
+    ],
+    "hashtags": [
+      "#新生活",
+      "#定期検診",
+      "#春",
+      "#親知らず"
+    ],
+    "illustration_prompt": "a packed cardboard moving box and a toothbrush travel case on a desk beside a cherry blossom branch"
+  },
+  {
+    "id": "dental-health-week",
+    "title": "6月4日は「むし歯予防デー」",
+    "hook": "story",
+    "months": [
+      6
+    ],
+    "body": [
+      "6月4日から10日は「歯と口の健康週間」。毎年この時期は、歯の健康を見直すきっかけの週です",
+      "学校の歯科健診の結果が届くのもこのころ。「要受診」の紙は早めに動くのがおすすめです",
+      "健診で問題なしでも、歯ぐきや噛み合わせまでは見きれないことがあります",
+      "家族みんなで歯ブラシを新しくする日にしてみてはいかがでしょうか"
+    ],
+    "hashtags": [
+      "#歯と口の健康週間",
+      "#むし歯予防デー",
+      "#学校歯科健診",
+      "#予防歯科"
+    ],
+    "illustration_prompt": "a family set of four new toothbrushes in different colors standing in a cup by a sunny window"
+  },
+  {
+    "id": "good-teeth-day",
+    "title": "11月8日「いい歯の日」に見直す3つ",
+    "hook": "number",
+    "months": [
+      11
+    ],
+    "body": [
+      "①歯ブラシの毛先は開いていないか ②フロスや歯間ブラシを使っているか ③前回の検診はいつか",
+      "80歳で20本の歯を残す「8020（ハチマルニイマル）」の達成者は年々増えているとされています",
+      "歯が多く残っている人ほど、食事を楽しめ、全身の健康にもつながると考えられています",
+      "年末が近づく前に、検診の予約を入れておきましょう"
+    ],
+    "hashtags": [
+      "#いい歯の日",
+      "#8020運動",
+      "#定期検診",
+      "#歯の健康"
+    ],
+    "illustration_prompt": "an elderly person's hands holding a crisp apple at a wooden table with autumn leaves outside the window"
+  },
+  {
+    "id": "toothpaste-choice",
+    "title": "歯みがき粉、何を基準に選ぶ？",
+    "hook": "howto",
+    "body": [
+      "むし歯予防を優先するなら「フッ素配合」が基本。大人は高濃度（1,400〜1,500ppm）が目安です",
+      "歯周病が気になる方は殺菌成分や抗炎症成分入り、しみる方は知覚過敏用という選び方があります",
+      "研磨剤の多いものは着色を落としやすい一方、力を入れすぎると歯を傷めることがあります",
+      "みがいたあとのうがいは少量の水で1回。フッ素を口に残すのがポイントです"
+    ],
+    "hashtags": [
+      "#歯みがき粉",
+      "#フッ素",
+      "#オーラルケア",
+      "#歯みがき"
+    ],
+    "illustration_prompt": "several tubes of toothpaste in different colors lined up on a bathroom shelf next to a small cup"
+  },
+  {
+    "id": "mouthwash-myth",
+    "title": "洗口液は歯みがきの代わりになる？",
+    "hook": "myth",
+    "body": [
+      "結論：代わりにはなりません。歯垢（プラーク）はねばねばした膜で、液体ではほとんど落ちません",
+      "歯ブラシとフロスで汚れを落としたあとの「仕上げ」として使うのが基本です",
+      "口臭対策や、歯みがきが難しいときの補助としては役立ちます",
+      "アルコール入りは口が乾きやすい方には合わないことも。種類の相談も検診で"
+    ],
+    "hashtags": [
+      "#洗口液",
+      "#マウスウォッシュ",
+      "#オーラルケア",
+      "#歯みがき"
+    ],
+    "illustration_prompt": "a bottle of mouthwash and a small cup beside a toothbrush and floss on a bathroom counter"
+  },
+  {
+    "id": "electric-toothbrush",
+    "title": "電動歯ブラシ、手みがきより良い？",
+    "hook": "question",
+    "body": [
+      "正しく使えば、電動のほうが歯垢を落としやすいという報告があります",
+      "ポイントは「動かさない」こと。歯に軽く当てて、ゆっくりずらしていきます",
+      "手みがきと同じ力で押しつけると、歯や歯ぐきを傷めるおそれがあります",
+      "手みがきでもていねいにみがけていれば十分。どちらも歯と歯の間はフロスが必要です"
+    ],
+    "hashtags": [
+      "#電動歯ブラシ",
+      "#歯みがき",
+      "#オーラルケア",
+      "#歯垢"
+    ],
+    "illustration_prompt": "an electric toothbrush on its charging stand next to a manual toothbrush on a bathroom shelf"
+  },
+  {
+    "id": "night-tooth-pain",
+    "title": "夜になると歯が痛む…その理由",
+    "hook": "story",
+    "body": [
+      "昼間は気にならなかった歯が、夜に横になるとズキズキ痛みだすことがあります",
+      "横になると頭に血が集まり、歯の中の圧力が高まって痛みを感じやすくなるためとされています",
+      "むし歯が神経の近くまで進んでいるサインであることが多いです",
+      "市販の鎮痛薬で一時的に落ち着いても、原因は残っています。翌日にはご連絡ください"
+    ],
+    "hashtags": [
+      "#歯が痛い",
+      "#夜の歯痛",
+      "#むし歯",
+      "#歯の神経"
+    ],
+    "illustration_prompt": "a dim bedroom at night with a bedside clock, a glass of water and a hot water bottle on a pillow"
+  },
+  {
+    "id": "gum-recession",
+    "title": "歯が長く見えてきたら「歯ぐき下がり」",
+    "hook": "question",
+    "body": [
+      "下がった歯ぐきは、基本的に自然には戻らないとされています",
+      "原因は歯周病のほか、強すぎる歯みがき、歯ぎしり、歯並びなどさまざまです",
+      "根元が露出すると、しみたり、むし歯になりやすくなります",
+      "進行を止めることが第一。みがき方の見直しと、原因に合わせた治療を相談しましょう"
+    ],
+    "hashtags": [
+      "#歯ぐき下がり",
+      "#歯肉退縮",
+      "#知覚過敏",
+      "#歯周病"
+    ],
+    "illustration_prompt": "a soft-bristled toothbrush beside a magnifying hand mirror on a tidy bathroom counter at dusk"
+  },
+  {
+    "id": "smoking-gums",
+    "title": "タバコを吸う人の歯ぐきは「出血しにくい」",
+    "hook": "myth",
+    "body": [
+      "出血しにくいのは健康だからではなく、ニコチンで血管が縮んで炎症が隠れているためです",
+      "喫煙者は歯周病が重症化しやすく、治療後の治りも遅いとされています",
+      "歯ぐきが黒ずむ、口臭が強くなる、着色が付きやすいといった影響もあります",
+      "禁煙は歯ぐきの回復にもつながります。禁煙外来との併用も選択肢のひとつです"
+    ],
+    "hashtags": [
+      "#タバコ",
+      "#歯周病",
+      "#禁煙",
+      "#歯ぐき"
+    ],
+    "illustration_prompt": "an empty ashtray pushed aside next to a fresh glass of water and a new toothbrush on a table"
+  },
+  {
+    "id": "chewing-benefits",
+    "title": "よく噛むと起こる、うれしい5つのこと",
+    "hook": "number",
+    "body": [
+      "①唾液が増えて口の中がきれいになる ②消化を助ける ③満腹感が得やすく食べすぎを防ぐ",
+      "④あごや顔の筋肉が鍛えられる ⑤脳への血流が増えるという報告もあります",
+      "目安は一口30回とよくいわれますが、まずは「今より5回多く」から",
+      "片側ばかりで噛むのは、歯や合わない入れ歯が原因かもしれません。検診でご確認を"
+    ],
+    "hashtags": [
+      "#よく噛む",
+      "#咀嚼",
+      "#唾液",
+      "#健康習慣"
+    ],
+    "illustration_prompt": "a wooden bowl of crunchy raw vegetables, nuts and a whole apple on a bright kitchen table"
+  },
+  {
+    "id": "extraction-aftercare",
+    "title": "抜歯のあと、やってはいけないこと",
+    "hook": "howto",
+    "body": [
+      "強いうがいは禁物。傷口をふさぐ血のかさぶたが取れて、治りが遅くなります",
+      "当日の飲酒・激しい運動・長風呂は、出血しやすくなるため控えてください",
+      "麻酔が切れるまで食事は待ち、しびれた唇やほおを噛まないように",
+      "痛みや腫れは2〜3日がピークのことが多いです。強くなり続ける、熱が出るときはご連絡ください"
+    ],
+    "hashtags": [
+      "#抜歯",
+      "#抜歯後",
+      "#親知らず",
+      "#口腔外科"
+    ],
+    "illustration_prompt": "a bowl of cool pudding, a spoon and a glass of water on a bedside tray in a quiet room"
+  }
+]

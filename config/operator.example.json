@@ -1,0 +1,23 @@
+{
+  "_comment": "運用者（複数医院をまとめて管理する側）用の設定。このファイルを config/operator.json にコピーして値を入れてください。operator.json は .gitignore 済みで GitHub には上がりません。",
+
+  "github_owner": "your-github-user-or-org",
+  "_github_owner_help": "医院ごとのリポジトリを作る GitHub ユーザー名または Organization 名",
+  "github_token": "ghp_xxxxxxxxxxxxxxxxxxxx",
+  "_github_token_help": "GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) で作成。権限: repo, workflow（Organization の場合は admin:org も）",
+  "template_repo": "your-github-user-or-org/clinic-insta-template",
+  "_template_repo_help": "このフォルダを push したテンプレートリポジトリ（Settings → Template repository にチェック）",
+
+  "ig_app_id": "1234567890",
+  "ig_app_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "_ig_app_help": "Meta for Developers で運用者が1つ作ったアプリ（Instagram ログイン版）の Instagram app ID / app secret。developers.facebook.com → アプリ → Instagram → API setup with Instagram login の下部に表示",
+  "ig_redirect_uri": "https://your-github-user-or-org.github.io/clinic-insta-template/authorize.html",
+  "_ig_redirect_help": "Meta アプリの「Business login settings → OAuth redirect URIs」に同じ URL を登録しておく。テンプレートリポジトリの GitHub Pages の authorize.html",
+
+  "cf_account_id": "",
+  "cf_api_token": "",
+  "_cf_help": "任意。Cloudflare Workers AI（無料）で背景写真を安定生成。各医院のリポジトリに Secrets として自動配布されます",
+  "anthropic_api_key": "",
+  "_anthropic_help": "任意。AI でのネタ生成・週次ブラッシュアップ。各医院に自動配布",
+  "hf_token": ""
+}

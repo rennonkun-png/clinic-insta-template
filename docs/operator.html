@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>運用者ガイド</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F5F6F4;--panel:#fff;--ink:#1C1F22;--muted:#626B72;--brand:#155E4C;--brand-deep:#0F463A;--marker:#F4C542;--line:#DDE2DF;--code:#1A1F23;--code-text:#E8ECEA}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13181A;--panel:#1B2124;--ink:#EDF0EE;--muted:#9AA6AC;--line:#2C3539;--code:#0B0F11}}
+:root[data-theme="dark"]{--bg:#13181A;--panel:#1B2124;--ink:#EDF0EE;--muted:#9AA6AC;--line:#2C3539;--code:#0B0F11}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Noto Sans JP",system-ui,sans-serif;font-weight:500;line-height:1.8;line-break:strict;overflow-wrap:anywhere}
+main{max-width:820px;margin:0 auto;padding:36px 20px 80px}
+a{color:var(--brand-deep)}
+h1{font-size:28px;font-weight:700;margin:0 0 6px;text-wrap:balance}
+h1 em,h2 em{font-style:normal;background:linear-gradient(transparent 58%,var(--marker) 58%)}
+.lead{color:var(--muted);margin:0 0 24px}
+h2{font-size:19px;margin:34px 0 10px;font-weight:700;padding-left:12px;border-left:4px solid var(--marker)}
+.card{background:var(--panel);border-radius:8px;padding:20px 24px;margin:12px 0}
+ol.todo{list-style:none;padding:0;margin:0}
+ol.todo li{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);align-items:start}
+ol.todo li:last-child{border:0}
+ol.todo input{width:22px;height:22px;margin-top:5px;accent-color:var(--brand)}
+code{background:rgba(21,94,76,.08);padding:2px 6px;border-radius:4px;font-size:.92em;font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--code);color:var(--code-text);padding:14px 16px;border-radius:8px;overflow:auto;font-size:13px;line-height:1.6}
+pre code{background:none;padding:0;color:inherit}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:top}
+th{font-weight:700;white-space:nowrap;width:1%}
+.note{border-left:4px solid var(--marker);background:var(--panel);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14.5px}
+.back{font-size:14px;margin-bottom:18px;display:inline-block}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">← セットアップ画面へ戻る</a>
+  <h1>運用者ガイド：<em>複数の医院</em>をまとめて動かす</h1>
+  <p class="lead">運用会社（旅河さん側）が GitHub と Meta アプリを1つ持ち、医院には「プロアカウント化」と「許可リンクをタップ」だけをお願いする方式です。医院ごとの追加はコマンド1本で終わります。</p>
+
+  <h2>最初に1回だけ（約40分）</h2>
+  <div class="card"><ol class="todo">
+    <li><input type="checkbox"><label><b>テンプレートリポジトリを作る</b>：GitHub でリポジトリ（例 <code>clinic-insta-template</code>・Public）を作り、このフォルダ一式を push。Settings → 一番上の <b>Template repository</b> にチェック。Settings → Pages で main / docs を有効化</label></li>
+    <li><input type="checkbox"><label><b>GitHub のトークンを作る</b>：Settings → Developer settings → Personal access tokens → Tokens (classic) → 権限 <code>repo</code> と <code>workflow</code>（Organization なら <code>admin:org</code> も）</label></li>
+    <li><input type="checkbox"><label><b>Meta アプリを1つ作る</b>：<a href="https://developers.facebook.com/" target="_blank" rel="noopener">developers.facebook.com</a> → マイアプリ → アプリを作成 → ユースケース「Instagram」。左メニュー Instagram → <b>API setup with Instagram login</b> を開く</label></li>
+    <li><input type="checkbox"><label>同じ画面の <b>Business login settings</b> → <b>OAuth redirect URIs</b> に <code>https://（GitHubユーザー名）.github.io/clinic-insta-template/authorize.html</code> を登録して保存。画面下部の <b>Instagram app ID</b> と <b>Instagram app secret</b> を控える</label></li>
+    <li><input type="checkbox"><label><b>Cloudflare（無料）</b>：背景写真の安定生成用。<a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener">アカウント作成</a> → Account ID と、API Tokens → テンプレート「Workers AI」でトークン作成</label></li>
+    <li><input type="checkbox"><label>このフォルダで <code>config/operator.example.json</code> を <code>config/operator.json</code> にコピーし、上で控えた値を入力（このファイルは GitHub に上がりません）</label></li>
+    <li><input type="checkbox"><label><code>pip install -r requirements.txt</code> を実行</label></li>
+  </ol></div>
+
+  <h2>医院を1件追加する（約10分・医院の操作は5分）</h2>
+  <div class="card"><ol class="todo">
+    <li><input type="checkbox"><label>医院に <a href="clinic.html" target="_blank">医院向けのお願いページ</a> を送る（プロアカウント化・テスター承認・許可リンク）</label></li>
+    <li><input type="checkbox"><label>Meta アプリの <b>API setup with Instagram login → Add account</b> で医院の Instagram ユーザー名を <b>Instagram テスター</b>として追加 → 医院側で承認してもらう</label></li>
+    <li><input type="checkbox"><label>許可リンクを作って医院に送る：<pre><code>python scripts/get_token.py --link</code></pre></label></li>
+    <li><input type="checkbox"><label>医院から届いたコードでセットアップ（質問に答える形で進みます）：<pre><code>python scripts/setup_clinic.py --name "たびかわ歯科クリニック" --code 届いたコード</code></pre>引数で一気に指定する例：<pre><code>python scripts/setup_clinic.py --name "たびかわ歯科クリニック" --specialties dental --goals reach,followers,acquisition --services whitening,orthodontics --hashtags "#たびかわ歯科,#○○区歯医者" --footer "東京都○○区○○1-2-3 / TEL 03-0000-0000" --primary "#2A7A6E" --accent "#F4C542" --code 届いたコード</code></pre></label></li>
+    <li><input type="checkbox"><label>表示された Actions の URL でテスト結果（Artifacts の画像）を確認 → 問題なければ Actions → Run workflow（テスト実行なし・曜日無視あり）で本番 1 件目を投稿</label></li>
+  </ol></div>
+
+  <h2>セットアップが自動でやること</h2>
+  <div class="card"><table>
+    <tr><th>リポジトリ</th><td>テンプレートから医院用を作成（Public。トークンは Secrets なので公開されません）</td></tr>
+    <tr><th>Secrets</th><td>IG_ACCESS_TOKEN / IG_USER_ID に加え、operator.json にある Cloudflare・Anthropic・Hugging Face のキーを配布</td></tr>
+    <tr><th>設定</th><td>GitHub Pages（main / docs）、Actions の書き込み権限、<code>config/clinic.json</code> の生成とコミット</td></tr>
+    <tr><th>テスト</th><td>DRY_RUN のワークフローを起動（画像だけ作って投稿しない）</td></tr>
+  </table></div>
+
+  <h2>運用中によくある作業</h2>
+  <div class="card"><table>
+    <tr><th>医院の設定を変える</th><td>その医院のリポジトリで <code>config/clinic.json</code> を編集（GitHub 上で直接編集可）</td></tr>
+    <tr><th>院長の写真を入れる</th><td>背景透過 PNG を <code>assets/doctor.png</code> に置き、<code>person_image</code> に指定</td></tr>
+    <tr><th>ネタを HP から作る</th><td><code>python scripts/ai_generate.py --url https://医院HP/ --count 20 --apply-services</code>（ANTHROPIC_API_KEY が必要）</td></tr>
+    <tr><th>投稿を止める</th><td>Actions → 「Instagram 毎日自動投稿」→ Disable workflow</td></tr>
+    <tr><th>トークン切れ（60日以上停止した場合）</th><td>許可リンクを再送 → <code>get_token.py --code</code> → リポジトリの Secrets を更新</td></tr>
+    <tr><th>成果を見る</th><td>各医院の Pages（設定画面の「運用とレポート」）。毎週月曜に自動更新</td></tr>
+  </table></div>
+
+  <div class="note">Meta アプリが「開発モード」の間は、テスターとして追加した Instagram アカウントだけが連携できます（医院数の上限は実質ありません）。将来、テスター承認の手間をなくしたい場合は Meta の「アプリレビュー」を通すと、どの医院もリンクをタップするだけで連携できます。</div>
+</main>
+</body>
+</html>
