@@ -96,6 +96,13 @@ class GitHub:
             body["sha"] = cur.json()["sha"]
         self.req("PUT", f"/repos/{owner}/{repo}/contents/{path}", json=body)
 
+    def put_variable(self, owner: str, repo: str, name: str, value: str) -> None:
+        r = requests.patch(f"{API}/repos/{owner}/{repo}/actions/variables/{name}", headers=self.h, json={"name": name, "value": value}, timeout=30)
+        if r.status_code == 404:
+            self.req("POST", f"/repos/{owner}/{repo}/actions/variables", json={"name": name, "value": value})
+        elif r.status_code not in (200, 204):
+            sys.exit(f"変数 {name} の登録に失敗: {r.status_code} {r.text[:200]}")
+
     def dispatch(self, owner: str, repo: str, workflow: str, inputs: dict) -> None:
         self.req("POST", f"/repos/{owner}/{repo}/actions/workflows/{workflow}/dispatches", json={"ref": "main", "inputs": inputs})
 
@@ -162,6 +169,9 @@ def main() -> int:
     ap.add_argument("--token", help="（代替）長期アクセストークンを直接指定")
     ap.add_argument("--user-id", help="（代替）Instagram ユーザーID")
     ap.add_argument("--no-test", action="store_true", help="テスト実行を起動しない")
+    ap.add_argument("--no-token", action="store_true", help="Instagram の接続はあとで（Actions の「Instagram を接続」から）行う")
+    ap.add_argument("--config", help="作成済みの設定ファイル（例: config/genova.json）をそのまま使う")
+    ap.add_argument("--state", help="投稿履歴（state/posted.json）を引き継ぐ")
     a = ap.parse_args()
 
     op = get_token.load_operator()
@@ -170,6 +180,12 @@ def main() -> int:
             sys.exit(f"config/operator.json の {k} が未設定です")
 
     # ---- 対話
+    pre = _strip(json.load(open(a.config, encoding="utf-8"))) if a.config else None
+    if pre:
+        a.name = a.name or pre.get("clinic_name")
+        a.specialties = a.specialties or ",".join(pre.get("specialties", []))
+        a.goals = a.goals or ",".join(pre.get("goals", []))
+        a.services = a.services if a.services is not None else ",".join(pre.get("services", {}).keys())
     if not a.name:
         a.name = ask("医院名")
     specialties = [s.strip() for s in a.specialties.split(",")] if a.specialties else ask_multi("診療科（複数可）", SPECIALTIES, ["dental"])
@@ -187,7 +203,10 @@ def main() -> int:
         a.footer = ask("画像下の一行（住所・電話。空でも可）", "")
 
     # ---- トークン
-    if a.token and a.user_id:
+    token = user_id = username = None
+    if a.no_token:
+        log("Instagram の接続はあとで行います（Actions → Instagram を接続）")
+    elif a.token and a.user_id:
         token, user_id, username = a.token, a.user_id, "(指定)"
     else:
         code = a.code or ask("医院から届いた許可コード（python scripts/get_token.py --link で作ったリンクの先）")
@@ -200,13 +219,17 @@ def main() -> int:
     # ---- GitHub
     gh = GitHub(op["github_token"])
     owner = op["github_owner"]
-    repo = a.repo or ("clinic-insta-" + re.sub(r"[^a-z0-9]+", "-", (username or a.name).lower()).strip("-") or "clinic")
+    repo = a.repo or ("clinic-insta-" + (re.sub(r"[^a-z0-9]+", "-", (username or a.name).lower()).strip("-") or time.strftime("%Y%m%d%H%M")))
     log(f"リポジトリを作成: {owner}/{repo}")
     gh.create_from_template(op["template_repo"], owner, repo, f"{a.name} Instagram 自動投稿")
     time.sleep(5)  # 生成直後は中身が揃うまで少し待つ
 
     log("Secrets を登録")
-    secrets = {"IG_ACCESS_TOKEN": token, "IG_USER_ID": user_id}
+    secrets = {"IG_ACCESS_TOKEN": token, "IG_USER_ID": user_id} if token else {}
+    secrets["GH_ADMIN_TOKEN"] = op["github_token"]  # 「Instagram を接続」ワークフローが Secrets を書き込むため
+    sec = op.get("ig_app_secret", "")
+    if sec and not sec.startswith("xxxx"):
+        secrets["META_APP_SECRET"] = sec
     for k, v in (("CF_ACCOUNT_ID", op.get("cf_account_id")), ("CF_API_TOKEN", op.get("cf_api_token")),
                  ("ANTHROPIC_API_KEY", op.get("anthropic_api_key")), ("HF_TOKEN", op.get("hf_token"))):
         if v:
@@ -214,13 +237,21 @@ def main() -> int:
     for k, v in secrets.items():
         gh.put_secret(owner, repo, k, v)
 
+    for k, v in (("META_APP_ID", op.get("ig_app_id")), ("META_CONFIG_ID", op.get("fb_config_id")), ("IG_REDIRECT_URI", op.get("ig_redirect_uri"))):
+        if v:
+            gh.put_variable(owner, repo, k, str(v))
+
     log("Actions の書き込み権限と GitHub Pages を有効化")
     gh.workflow_write(owner, repo)
     pages_url = gh.enable_pages(owner, repo)
 
     log("config/clinic.json を書き込み")
-    cfg = build_config(a, specialties, goals)
+    cfg = pre if pre else build_config(a, specialties, goals)
     gh.put_file(owner, repo, "config/clinic.json", json.dumps(cfg, ensure_ascii=False, indent=2) + "\n", f"設定: {a.name}")
+
+    if a.state:
+        log("投稿履歴を引き継ぎ")
+        gh.put_file(owner, repo, "state/posted.json", Path(a.state).read_text(encoding="utf-8"), "投稿履歴を引き継ぎ")
 
     if not a.no_test:
         log("テスト実行（DRY_RUN）を起動")

@@ -1,0 +1,39 @@
+name: Instagram を接続
+
+# 許可リンクで「許可」を押したあとに表示されるコードを貼り付けて実行する。
+# どの PC・スマホからでもブラウザだけで完了します（Actions → Instagram を接続 → Run workflow）。
+on:
+  workflow_dispatch:
+    inputs:
+      code:
+        description: "許可後のページに表示されたコード（数分で無効になるので、すぐに実行）"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  connect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: コードを伏せ字にする
+        run: echo "::add-mask::${{ inputs.code }}"
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -q requests pynacl
+
+      - name: トークンに交換して Secrets に保存
+        env:
+          IG_CODE: ${{ inputs.code }}
+          META_APP_ID: ${{ vars.META_APP_ID }}
+          META_CONFIG_ID: ${{ vars.META_CONFIG_ID }}
+          IG_REDIRECT_URI: ${{ vars.IG_REDIRECT_URI }}
+          META_APP_SECRET: ${{ secrets.META_APP_SECRET }}
+          GH_ADMIN_TOKEN: ${{ secrets.GH_ADMIN_TOKEN }}
+        run: python scripts/connect_instagram.py
