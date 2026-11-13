@@ -152,7 +152,8 @@ def main() -> int:
     # 4) トークン延長
     try:
         res = instagram.refresh_token(token)
-        log(f"トークンを延長しました（残り {int(res.get('expires_in', 0)) // 86400} 日）")
+        if not res.get("skipped"):
+            log(f"トークンを延長しました（残り {int(res.get('expires_in', 0)) // 86400} 日）")
     except Exception as e:  # noqa: BLE001
         log(f"警告: トークン延長に失敗しました: {e}")
 

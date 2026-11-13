@@ -199,6 +199,8 @@ def key_phrases(text: str) -> list[str]:
 
 
 def split_point(text: str, max_head: int = 22) -> tuple[str, str]:
+    # 本文側に「①」「1.」などの番号があると、デザイン側の番号と二重になるので外す
+    text = re.sub(r"^\s*(?:[①-⑳]|\(?\d{1,2}[.．)）、](?!\d))\s*", "", text)
     m = re.search(r"[、。：:]", text)
     if m and 6 <= m.start() <= max_head and len(text) - m.end() >= 6:
         return text[: m.start()], text[m.end():].strip("。 ")
