@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instagram 分析</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<header class="top">
+  <button class="menu-btn" id="menuBtn" aria-label="メニューを開く" aria-expanded="false">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+  </button>
+  <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>Instagram 分析</span></div>
+  <label class="acc">
+    <span class="acc-label">アカウント</span>
+    <select id="accSel" aria-label="アカウントの切り替え"></select>
+  </label>
+  <span class="sample-badge" id="sampleBadge" hidden>サンプルデータ</span>
+</header>
+<div class="layout">
+  <nav class="side" id="side" aria-label="レポートのメニュー"></nav>
+  <div class="scrim" id="scrim"></div>
+  <main class="main">
+    <div class="rhead">
+      <div class="rtitle">
+        <div class="crumb" id="crumb"></div>
+        <h1 id="title">読み込み中</h1>
+      </div>
+      <div class="dr" id="dr">
+        <button class="dr-btn" id="drBtn" aria-haspopup="dialog" aria-expanded="false">
+          <span class="dr-main" id="drMain"></span>
+          <span class="dr-cmp" id="drCmp"></span>
+        </button>
+        <div class="dr-panel" id="drPanel" role="dialog" aria-label="期間の選択" hidden></div>
+      </div>
+    </div>
+    <div id="notice"></div>
+    <div id="body"></div>
+  </main>
+</div>
+<div id="tip" role="tooltip" hidden></div>
+<div id="modal" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+name: 毎晩の記録（分析サイト用）
+
+on:
+  schedule:
+    # 毎日 日本時間 2:30（UTC 17:30）。前日分を記録する
+    - cron: "30 17 * * *"
+  workflow_dispatch:
+    inputs:
+      day:
+        description: "記録する日（YYYY-MM-DD。空なら前日）"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    if: ${{ vars.ANALYTICS_REPO != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q requests
+
+      # 数字は公開しないため、非公開の分析リポジトリに書き足す（このリポジトリには保存しない）
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.ANALYTICS_REPO }}
+          ssh-key: ${{ secrets.ANALYTICS_SSH_KEY }}
+          path: analytics_repo
+
+      - name: Instagram の数字を記録する
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: |
+          python scripts/collect.py --out analytics_repo/site/data --account "${{ vars.ANALYTICS_ACCOUNT || 'genova' }}" \
+            --name "${{ vars.ANALYTICS_NAME || 'GENOVA' }}" --kind "${{ vars.ANALYTICS_KIND || '自社' }}" --day "${{ inputs.day }}"
+
+      - name: 非公開の分析リポジトリに保存する
+        working-directory: analytics_repo
+        run: |
+          git config user.name instapost-bot
+          git config user.email instapost-bot@users.noreply.github.com
+          git add site/data
+          git diff --cached --quiet && echo "変更なし" && exit 0
+          git commit -m "記録 $(date -u +%Y-%m-%d)"
+          git push
