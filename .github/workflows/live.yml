@@ -1,0 +1,69 @@
+name: 最新の数字（5分おき）
+
+on:
+  schedule:
+    # 5分おき（GitHub の混み具合で少し遅れることがある）。毎時 0分台・30分台は全投稿、それ以外は直近3本だけ
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      all:
+        description: "全投稿を取り直す"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analytics-live
+  cancel-in-progress: true
+
+jobs:
+  live:
+    if: ${{ vars.ANALYTICS_REPO != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q requests
+
+      # 最新の数字は、分析リポジトリの live ブランチに1つだけ置く（履歴は残さない。サイトの作り直しも起きない）
+      - name: 前回の最新の数字を取り出す
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: ${{ vars.ANALYTICS_REPO }}
+          ssh-key: ${{ secrets.ANALYTICS_SSH_KEY }}
+          ref: live
+          path: live_repo
+
+      - name: 最新の数字を取る
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+        run: |
+          mkdir -p live_out
+          [ -f live_repo/live.json ] && cp live_repo/live.json live_out/ || true
+          M=$(date -u +%M)
+          if [ "${{ inputs.all }}" = "true" ] || [ $((10#$M % 30)) -lt 5 ]; then ALL="--all"; else ALL=""; fi
+          python scripts/live.py --out live_out/live.json --recent 3 $ALL
+
+      - name: 分析リポジトリの live ブランチに置く
+        env:
+          REPO: ${{ vars.ANALYTICS_REPO }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ANALYTICS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          cd live_out
+          git init -q -b live
+          git config user.name instapost-bot
+          git config user.email instapost-bot@users.noreply.github.com
+          git add live.json
+          git commit -q -m "最新の数字 $(date -u +%H:%M)"
+          git push -q -f "git@github.com:${REPO}.git" live
+          rm -f ~/.ssh/id_ed25519

@@ -1,0 +1,56 @@
+name: まとめ投稿（指定した時刻に、決めた投稿を続けて出す）
+
+on:
+  schedule:
+    # 毎日 日本時間 19:00（UTC 10:00）に、state/batch_queue.json に今日の分があれば出す
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+    inputs:
+      now:
+        description: "今すぐ出す（予約の日付を無視）"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 日本語フォント・ffmpeg・ライブラリをインストール
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
+          pip install -q -r requirements.txt
+      - name: 非公開の素材を取り出す（設定したときだけ）
+        if: ${{ vars.ASSETS_REPO != '' }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.ASSETS_REPO }}
+          ssh-key: ${{ secrets.ASSETS_SSH_KEY }}
+          path: private_assets
+      - name: 非公開の素材を置く
+        if: ${{ vars.ASSETS_REPO != '' }}
+        run: |
+          mkdir -p assets/bgm
+          if [ -d private_assets/bgm ]; then cp private_assets/bgm/* assets/bgm/; fi
+          rm -rf private_assets
+      - name: 予約した投稿を順番に出す
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IMAGE_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          NOW: ${{ inputs.now && '1' || '0' }}
+        run: python scripts/batch_post.py

@@ -79,11 +79,17 @@ def main() -> int:
         return 0
 
     posts = load_posts(cfg, learning)
-    post = pick_post(cfg, posts, d, state, learning)
+    want = os.environ.get("POST_ID", "").strip()  # 指定した投稿を出す（まとめ投稿・テスト用）
+    if want:
+        post = next((p for p in posts if p["id"] == want or p["id"].endswith(":" + want)), None)
+        if post is None:
+            sys.exit(f"投稿 {want} が見つかりません")
+    else:
+        post = pick_post(cfg, posts, d, state, learning)
     fmt = os.environ.get("FORMAT") or choose_format(cfg, post, d, learning, ffmpeg_ok=media.ffmpeg_available())
     log(f"本日の投稿: [{post['category']}] {post['title']}  形式={fmt}  目的={cfg.get('goals')}")
 
-    stem = d.isoformat()
+    stem = d.isoformat() + (f"_{want}" if want else "")  # 同じ日に何本も出すときに、画像の名前が重ならないように
     illust = None if is_note(cfg) else get_illustration(cfg, post)  # 医院の写真 or 無料AIイラスト or なし
     files: list[str] = []
     if fmt == "carousel":

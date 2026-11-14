@@ -59,7 +59,7 @@ def save(path: Path, data) -> None:
 # ------------------------------------------------------------------ アカウントの日ごとの数字
 def account_day(api: Api, day: date) -> dict:
     since = int(datetime(day.year, day.month, day.day, tzinfo=JST).timestamp())
-    until = since + 86400
+    until = min(since + 86400, int(datetime.now(JST).timestamp()) - 60)  # 今日の分は「今」まで
     row = {"date": day.isoformat()}
 
     def total(metric: str, **extra):
