@@ -114,6 +114,13 @@ def main() -> int:
         except Exception as e:  # 個人アカウント・非公開・存在しない等
             rows.append({"username": u, "error": str(e)})
             log(f"読めませんでした: @{u}（{e}）")
+    if all(r.get("error") for r in rows):  # 全部だめなら、接続にどの権限があるかを出す（トークンそのものは出さない）
+        try:
+            pr = requests.get(f"{instagram._base(token)}/me/permissions", params={"access_token": token}, timeout=30).json()
+            granted = [x["permission"] for x in pr.get("data", []) if x.get("status") == "granted"]
+            log(f"この接続で許可されている権限: {', '.join(granted) or pr}")
+        except Exception as e:  # noqa: BLE001
+            log(f"権限を確かめられませんでした: {e}")
     date = datetime.now(JST).strftime("%Y-%m-%d")
     if len(sys.argv) > 1 and sys.argv[1] == "--check":  # 試すだけのときは記録しない
         print(report_md(rows, date))
