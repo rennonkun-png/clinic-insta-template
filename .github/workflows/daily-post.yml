@@ -47,6 +47,25 @@ jobs:
           sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
           pip install -q -r requirements.txt
 
+      # 公開してはいけない素材（BGM の曲など）は、非公開の別リポジトリに置き、ここで取り出す。
+      # 使うとき: リポジトリの Variables に ASSETS_REPO（例: owner/xxx-assets）、Secrets に ASSETS_SSH_KEY（その素材リポジトリの読み取り専用デプロイキーの秘密鍵）を登録。
+      # 非公開リポジトリの bgm/ の中身が assets/bgm/ に入る（投稿のたびに取り出し、このリポジトリには保存しない）。
+      - name: 非公開の素材を取り出す（設定したときだけ）
+        if: ${{ vars.ASSETS_REPO != '' }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.ASSETS_REPO }}
+          ssh-key: ${{ secrets.ASSETS_SSH_KEY }}
+          path: private_assets
+
+      - name: 非公開の素材を置く
+        if: ${{ vars.ASSETS_REPO != '' }}
+        run: |
+          mkdir -p assets/bgm
+          if [ -d private_assets/bgm ]; then cp private_assets/bgm/* assets/bgm/; fi
+          rm -rf private_assets
+          ls assets/bgm | wc -l
+
       - name: 公開URLを決定（GitHub Pages）
         id: pages
         run: |
