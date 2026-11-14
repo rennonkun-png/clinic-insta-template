@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>医院カルテ作成</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F0E8;          /* 紙の色 */
+  --panel:#FFFDF8;
+  --ink:#23272B;
+  --muted:#5E666C;
+  --line:#DAD5C8;
+  --accent:#1F5A57;      /* 深い青緑 */
+  --accent-soft:#E3EEEC;
+  --rec:#9A5B12;
+  --rec-soft:#FBEFD9;
+  --warn-soft:#FDF3E1;
+  --danger:#A13A2E;
+  --focus:#2F6FD6;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans JP",system-ui,sans-serif;font-size:17px;line-height:1.8;line-break:strict;overflow-wrap:anywhere;-webkit-text-size-adjust:100%}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 120px}
+header.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:4px 0 14px;border-bottom:2px solid var(--ink);margin-bottom:18px}
+header.top .t{font-weight:700;font-size:18px;letter-spacing:.08em}
+header.top .s{font-size:14px;color:var(--muted)}
+h1{font-size:26px;line-height:1.5;margin:6px 0 10px;font-weight:700;text-wrap:balance}
+h2.q{font-size:23px;line-height:1.55;margin:4px 0 6px;font-weight:700;text-wrap:balance}
+h2.q:focus{outline:none}
+p{margin:0 0 14px}
+.lead{color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:22px 20px;margin:16px 0}
+.card h3{margin:0 0 6px;font-size:18px}
+label.fl{display:block;font-weight:700;margin:0 0 6px}
+.hint{font-size:15px;color:var(--muted);margin:4px 0 0}
+input[type=text],input[type=url],textarea{width:100%;font:inherit;font-size:17px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:6px;padding:12px 14px}
+textarea{min-height:130px;resize:vertical;line-height:1.7}
+input[type=text]:focus,input[type=url]:focus,textarea:focus{border-color:var(--accent);outline:3px solid rgba(47,111,214,.35);outline-offset:1px}
+details{margin-top:14px}
+summary{cursor:pointer;font-weight:700;color:var(--accent);padding:6px 0}
+summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+
+/* ボタン */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:10px 22px;font:inherit;font-weight:700;font-size:17px;border-radius:6px;border:1.5px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+.btn.sub{background:var(--panel);color:var(--accent)}
+.btn.plain{background:transparent;border-color:transparent;color:var(--muted);font-weight:500;text-decoration:underline;min-height:44px;padding:8px 10px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.opt input:focus-visible+.box,button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn.wide{width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+
+/* 進み具合 */
+.prog{display:flex;align-items:center;gap:12px;margin:0 0 10px;font-size:15px;color:var(--muted)}
+.prog .bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.prog .bar i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.cat{display:inline-block;font-size:14px;font-weight:700;color:var(--accent);letter-spacing:.06em;margin-bottom:2px}
+
+/* 選択肢 */
+.opts{display:grid;gap:10px;margin:18px 0 6px;border:0;padding:0}
+.opts legend{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.opt{position:relative;display:block;cursor:pointer}
+.opt input{position:absolute;opacity:0;width:1px;height:1px}
+.opt .box{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start;background:#fff;border:1.5px solid var(--line);border-radius:6px;padding:14px 16px;min-height:56px;transition:border-color .12s,background .12s}
+.opt:hover .box{border-color:#B9B2A1}
+.opt .mk{width:24px;height:24px;margin-top:3px;border:2px solid #9A9384;background:#fff;display:grid;place-items:center}
+.opt input[type=radio]+.box .mk{border-radius:50%}
+.opt input[type=checkbox]+.box .mk{border-radius:4px}
+.opt input:checked+.box{border-color:var(--accent);background:var(--accent-soft)}
+.opt input:checked+.box .mk{border-color:var(--accent);background:var(--accent)}
+.opt input[type=radio]:checked+.box .mk::after{content:"";width:9px;height:9px;border-radius:50%;background:#fff}
+.opt input[type=checkbox]:checked+.box .mk::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.opt .lb{font-weight:700;font-size:17px;line-height:1.55}
+.opt .ds{display:block;font-size:15px;color:var(--muted);font-weight:400;line-height:1.6;margin-top:2px}
+.badge{display:inline-block;font-size:13px;font-weight:700;color:var(--rec);background:var(--rec-soft);border:1px solid #E9CF9F;border-radius:3px;padding:0 7px;margin-left:8px;vertical-align:2px;line-height:1.7}
+.opt.unsure .box{background:transparent;border-style:dashed}
+.opt.unsure .lb{font-weight:500}
+.opts.days{grid-template-columns:repeat(4,1fr)}
+.opts.days .box{grid-template-columns:1fr;justify-items:center;text-align:center;padding:12px 6px}
+.opts.days .mk{display:none}
+.opts.days .opt input:checked+.box{background:var(--accent);color:#fff}
+.sub-in{margin:10px 0 4px;padding:14px 16px;border-left:3px solid var(--accent);background:#fff;border-radius:0 6px 6px 0}
+.note{background:var(--warn-soft);border:1px solid #EBD3A8;border-radius:6px;padding:12px 14px;font-size:15px;margin:12px 0}
+.err{color:var(--danger);font-weight:700;font-size:15px;min-height:1.5em;margin:8px 0 0}
+.color-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+input[type=color]{width:64px;height:48px;border:1.5px solid var(--line);border-radius:6px;padding:3px;background:#fff;cursor:pointer}
+
+/* 下のボタン帯 */
+.nav{position:fixed;left:0;right:0;bottom:0;background:rgba(243,240,232,.96);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.nav .in{max-width:640px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.nav .btn{flex:1}
+.nav .btn.back{flex:0 0 auto;min-width:96px}
+.saved{font-size:13px;color:var(--muted);text-align:center;margin-top:12px}
+
+/* 確認画面 */
+dl.rv{margin:0}
+.rv .it{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.rv .it:last-child{border-bottom:0}
+.rv dt{font-size:14px;color:var(--muted);font-weight:700;grid-column:1}
+.rv dd{margin:0;grid-column:1;white-space:pre-wrap}
+.rv .fix{grid-column:2;grid-row:1/span 2;align-self:center;min-height:44px;padding:6px 14px;font-size:15px}
+.rv .uns{font-size:13px;color:var(--rec);font-weight:700;margin-left:6px}
+.rv .empty{color:var(--muted)}
+.rv-h{font-size:15px;font-weight:700;letter-spacing:.06em;color:var(--accent);margin:22px 0 0;padding-bottom:4px;border-bottom:2px solid var(--accent)}
+pre.json{background:#fff;border:1.5px solid var(--line);border-radius:6px;padding:14px;font-family:ui-monospace,Consolas,monospace;font-size:13.5px;line-height:1.6;max-height:360px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin:12px 0}
+.msg{font-size:15px;color:var(--accent);font-weight:700;min-height:1.5em;margin:8px 0 0}
+.hidden{display:none !important}
+@media (max-width:420px){
+  h1{font-size:23px} h2.q{font-size:21px}
+  .card{padding:18px 16px}
+  .opts.days{grid-template-columns:repeat(4,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><span class="t">医院カルテ</span><span class="s">Instagram 投稿の方針づくり</span></header>
+  <main id="app" aria-live="polite"></main>
+</div>
+<div class="nav hidden" id="nav"><div class="in">
+  <button type="button" class="btn sub back" id="btnBack">戻る</button>
+  <button type="button" class="btn" id="btnNext">進む</button>
+</div></div>
+
+<script>
+(function(){
+'use strict';
+var STORE_KEY = 'clinic_karte_draft_v1';
+var DAYS = [['mon','月'],['tue','火'],['wed','水'],['thu','木'],['fri','金'],['sat','土'],['sun','日'],['holiday','祝日']];
+
+function o(v, label, desc){ return {v:v, label:label, desc:desc||''}; }
+
+/* ===== 質問の定義 ===== */
+var Q = [
+  {key:'clinic_name', cat:'基本', type:'text', required:true,
+   title:'医院の名前を教えてください',
+   help:'投稿の文章や画像に入れる、正式な名前です。',
+   placeholder:'例：さくら歯科クリニック'},
+  {key:'specialties', cat:'基本', type:'multi', factual:true,
+   title:'診療科を選んでください',
+   help:'あてはまるものをすべて選んでください。',
+   options:[o('dentistry','歯科'),o('orthodontics','矯正歯科'),o('pediatric_dentistry','小児歯科'),o('internal_medicine','内科'),o('dermatology','皮膚科'),o('cosmetic_dermatology','美容皮膚科'),o('pediatrics','小児科'),o('otolaryngology','耳鼻咽喉科'),o('ophthalmology','眼科'),o('orthopedics','整形外科'),o('gynecology','婦人科'),o('gastroenterology','消化器内科'),o('psychiatry','心療内科・精神科'),o('other','その他')],
+   sub:{when:'other', key:'specialties_other', type:'text', label:'その他の診療科', placeholder:'例：形成外科'}},
+  {key:'area', cat:'基本', type:'text',
+   title:'医院のある市区町村は？',
+   help:'地域名の入った文章やハッシュタグに使います。',
+   placeholder:'例：世田谷区'},
+  {key:'director_name', cat:'基本', type:'text',
+   title:'院長先生のお名前は？',
+   help:'「院長 〇〇」と出すときに使います。わからなければ空欄のまま進めます。',
+   placeholder:'例：山田 花子'},
+  {key:'closed_days', cat:'基本', type:'days', factual:true,
+   title:'休診日はいつですか？',
+   help:'お知らせの投稿や、締めの案内文に使います。'},
+  {key:'audience', cat:'方針', type:'multi', rec:['new_patients'],
+   title:'投稿を特に見てほしいのは誰ですか？',
+   help:'複数選べます。選んだ人に向けた内容を多めにします。',
+   options:[o('new_patients','新しい患者さん','近くに住む、まだ来院したことのない方'),o('current_patients','通院中の患者さん','休診のお知らせや、通院中に役立つ情報'),o('recruit','求人・採用','働きたい人に、職場の雰囲気を伝える')]},
+  {key:'recruit_roles', cat:'方針', type:'text', showIf:function(a){return has(a.audience,'recruit');},
+   title:'募集している職種は？',
+   help:'採用向けの投稿で使います。複数ある場合は「、」で区切ってください。',
+   placeholder:'例：歯科衛生士、受付'},
+  {key:'focus_treatments', cat:'方針', type:'textarea',
+   title:'特に力を入れたい診療はありますか？',
+   help:'1行に1つずつ書いてください。この内容を多めに取り上げます。空欄でもかまいません。',
+   placeholder:'例：\n予防歯科（定期検診）\n小児の矯正\nインプラント'},
+  {key:'not_offered', cat:'方針', type:'text',
+   title:'医院で行っていない診療はありますか？',
+   help:'行っていない診療を投稿で取り上げないようにするためです。',
+   placeholder:'例：インプラント、ホワイトニング'},
+  {key:'disclose', cat:'方針', type:'multi', rec:['equipment','interior'],
+   title:'投稿に出してよい情報を選んでください',
+   help:'選ばなかった情報は投稿に出しません。',
+   options:[o('equipment','設備','機器や設備の紹介'),o('interior','院内の写真','待合室や診療室の様子'),o('staff','スタッフ紹介','スタッフの写真や人柄の紹介（ご本人の同意が必要です）'),o('price','料金','診療の料金'),o('self_pay','自費診療','保険がきかない診療の紹介')],
+   noteIf:function(a){ return (has(a.disclose,'price')||has(a.disclose,'self_pay')) ? '料金や自費診療を出す場合は、決まりにより「治療の内容・費用・リスクや副作用」を一緒に書く必要があります。投稿にはこれらを必ず添えます。' : ''; }},
+  {key:'design_color', cat:'見た目', type:'single', rec:'match_hp',
+   title:'投稿に使う医院の色は？',
+   options:[o('match_hp','ホームページの色に合わせる','ホームページを見て色を決めます'),o('calm_blue','落ち着いた青系','清潔で、まじめな印象'),o('soft_pink','やわらかいピンク系','やさしく、親しみやすい印象'),o('green','緑系','自然で、安心できる印象'),o('custom','色を指定する','決まった医院の色があるとき')],
+   sub:{when:'custom', key:'design_color_custom', type:'color', label:'医院の色'}},
+  {key:'design_mood', cat:'見た目', type:'single', rec:'clean_trust',
+   title:'投稿全体の雰囲気は？',
+   options:[o('friendly','親しみやすい','やわらかい言葉とイラスト多め'),o('clean_trust','清潔・信頼','すっきりした見た目で、きちんとした印象'),o('elegant','上品','落ち着いた色と余白で、大人っぽい印象')]},
+  {key:'person_mode', cat:'人物', type:'single', rec:'photo_cutout',
+   title:'投稿に人物をどう出しますか？',
+   options:[o('photo_cutout','先生の写真を切り抜いて使う','本人が見えるので、信頼感が出やすい'),o('photo_illust','先生の写真を元にしたイラストを作る','似顔絵のイラストを何種類か作って使います'),o('fictional_illust','架空の先生のイラスト','「イメージ」と表示し、名前は付けません'),o('none','人物は出さない','文字と図だけで作ります')]},
+  {key:'person_consent', cat:'人物', type:'single', unsureTo:'pending',
+   showIf:function(a){return a.person_mode==='photo_cutout'||a.person_mode==='photo_illust';},
+   title:'顔や写真を使うことについて、先生から書面で同意をもらっていますか？',
+   help:'同意書をいただくまでは、写真やイラストは使いません。',
+   options:[o('received','もらった','同意書があり、すぐに使えます'),o('pending','これからもらう','同意書がそろってから使い始めます')]},
+  {key:'person_photos', cat:'人物', type:'single', rec:'use_hp',
+   showIf:function(a){return a.person_mode==='photo_cutout'||a.person_mode==='photo_illust';},
+   title:'先生の写真はどれを使いますか？',
+   options:[o('use_hp','ホームページに載っている写真','使ってよいか、念のため医院に確認します'),o('send_new','新しく撮って送ってもらう','スマホで撮った写真でかまいません'),o('later','あとで決める','写真を使わない投稿から始めます')]},
+  {key:'illust_style', cat:'人物', type:'single', rec:'soft',
+   showIf:function(a){return a.person_mode==='photo_illust'||a.person_mode==='fictional_illust';},
+   title:'イラストの絵のタッチは？',
+   options:[o('soft','やわらかい手描き風','あたたかく、親しみやすい'),o('line','すっきりした線の絵','シンプルで、清潔な印象'),o('watercolor','水彩風','やさしく、落ち着いた印象')]},
+  {key:'voice', cat:'動画', type:'single', rec:'ai_voice',
+   title:'動画（リール）に読み上げの声を入れますか？',
+   options:[o('ai_voice','AIの声で読み上げる','画面に「AI音声」と表示します'),o('none','声なし','文字と音楽だけで作ります')]},
+  {key:'voice_style', cat:'動画', type:'single', rec:'narrator',
+   showIf:function(a){return a.voice==='ai_voice' && a.person_mode && a.person_mode!=='none';},
+   title:'先生が話しているように見せますか？',
+   options:[o('narrator','しない（ナレーターが読む）','読み上げ役として、落ち着いた声で読みます'),o('as_doctor','する（先生が話す形）','口は動かさず、「AI音声」と表示します')]},
+  {key:'bgm', cat:'動画', type:'single', rec:'stock',
+   title:'動画の音楽（BGM）は？',
+   options:[o('stock','素材サイトの曲','使ってよい曲を選んで使います'),o('original','自作の曲','この仕組みで作った曲を使います'),o('none','なし','音楽は入れません')]},
+  {key:'post_days', cat:'投稿', type:'single', rec:'daily',
+   title:'投稿する曜日は？',
+   options:[o('daily','毎日','見てもらえる回数が増えやすい'),o('weekdays','平日のみ','土日はお休みにします'),o('custom','曜日を指定する','決まった曜日だけ投稿します')],
+   sub:{when:'custom', key:'post_days_custom', type:'days', label:'投稿する曜日'}},
+  {key:'reel_ratio', cat:'投稿', type:'single', rec:'w4',
+   title:'動画（リール）は週に何本くらい？',
+   help:'残りは画像の投稿になります。',
+   options:[o('w4','週4本','動画と画像のバランスがよい'),o('w2','週2本','画像の投稿を多めにします'),o('w6plus','週6本以上','動画を中心にします')]},
+  {key:'content_mix', cat:'投稿', type:'single', rec:'useful',
+   title:'投稿の中身の割合は？',
+   options:[o('useful','お役立ち情報が中心','お役立ち7・医院の紹介2・お知らせ1'),o('clinic_intro','医院の紹介を多めに','お役立ち5・医院の紹介4・お知らせ1'),o('news','お知らせを多めに','お役立ち5・医院の紹介2・お知らせ3')]},
+  {key:'cta', cat:'投稿', type:'multi', rec:['profile_link'],
+   title:'投稿の最後に、何をすすめますか？',
+   help:'「ご予約は〇〇から」の部分です。複数選べます。',
+   options:[o('profile_link','プロフィールのリンク','Instagram のプロフィールに載せたリンクへ案内'),o('web_booking','Web予約','予約ページへ案内'),o('phone','電話','電話での予約を案内'),o('line','LINE','医院の LINE へ案内')]},
+  {key:'hashtags', cat:'投稿', type:'tags',
+   title:'毎回付けたいハッシュタグはありますか？',
+   help:'5個まで。空白か「、」で区切ってください。「#」は付けなくてもかまいません。空欄なら、こちらで選びます。',
+   placeholder:'例：世田谷区歯医者 さくら歯科'},
+  {key:'ai_disclosure', cat:'確認', type:'confirm', required:true,
+   title:'AIで作った画像や声についての表示',
+   help:'AIで作った画像や声を使う投稿には、Instagram の「AI作成」の表示を必ず付けます。外すことはできません。',
+   confirmLabel:'AIで作った画像・声には「AI作成」の表示を付けることを確認しました'},
+  {key:'notes', cat:'確認', type:'textarea',
+   title:'そのほか、伝えておきたいことはありますか？',
+   help:'避けてほしい言葉、季節の行事、大事にしている考えなど。空欄でもかまいません。',
+   placeholder:'例：「痛くない」という言葉は使わないでほしい'}
+];
+var QMAP = {}; Q.forEach(function(q){ QMAP[q.key]=q; });
+
+/* ===== 状態 ===== */
+var S = {screen:'start', cur:null, answers:{}, unsure:{}, hp_url:'', fromReview:false, result:null};
+
+function has(arr, v){ return Array.isArray(arr) && arr.indexOf(v) >= 0; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+/* まだ答えていない質問は「おすすめ」を選んだものとして数える（問題数が途中で大きく変わらないように） */
+function visible(){
+  var eff = {};
+  Q.forEach(function(q){ if (q.rec && !(q.key in S.answers)) eff[q.key] = q.rec; });
+  Object.keys(S.answers).forEach(function(k){ eff[k] = S.answers[k]; });
+  return Q.filter(function(q){ return !q.showIf || q.showIf(eff); });
+}
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({answers:S.answers, unsure:S.unsure, hp_url:S.hp_url, cur:S.cur, screen:S.screen==='result'?'review':S.screen, saved_at:new Date().toISOString()})); }catch(e){}
+}
+function load(){
+  try{ var t = localStorage.getItem(STORE_KEY); return t ? JSON.parse(t) : null; }catch(e){ return null; }
+}
+function clearStore(){ try{ localStorage.removeItem(STORE_KEY); }catch(e){} }
+
+var app = document.getElementById('app');
+var nav = document.getElementById('nav');
+var btnBack = document.getElementById('btnBack');
+var btnNext = document.getElementById('btnNext');
+
+/* ===== スタート画面 ===== */
+function renderStart(){
+  nav.classList.add('hidden');
+  var saved = load();
+  var resumeHtml = '';
+  if (saved && saved.answers && Object.keys(saved.answers).length){
+    var name = saved.answers.clinic_name ? esc(saved.answers.clinic_name) : '（医院名は未入力）';
+    resumeHtml = '<div class="card" id="resumeCard"><h3>入力の途中があります</h3><p>' + name + ' の入力が残っています。続きから再開できます。</p>'
+      + '<div class="row"><button type="button" class="btn" id="btnResume">続きから再開する</button><button type="button" class="btn sub" id="btnDiscard">消して最初から</button></div></div>';
+  }
+  app.innerHTML =
+    '<h1 tabindex="-1" id="h">医院のカルテを作ります</h1>'
+    + '<p class="lead">Instagram の投稿をどんな方針で作るかを、質問に答えて決めていきます。1画面に1問、だいたい5分ほどで終わります。迷ったら「わからない」を選べば、おすすめの設定になります。</p>'
+    + resumeHtml
+    + '<div class="card"><label class="fl" for="hpUrl">医院のホームページのアドレス（任意）</label>'
+    + '<input type="url" id="hpUrl" inputmode="url" autocomplete="url" placeholder="例：https://sakura-dental.jp/" value="' + esc(S.hp_url) + '">'
+    + '<p class="hint">ここでは読み取りはしません。あとで担当者が内容を確認します。</p>'
+    + '<details id="draftBox"><summary>ホームページから読み取った下書きを貼り付ける（担当者向け）</summary>'
+    + '<p class="hint">担当者から受け取った下書きの文字（{ から始まるもの）を、そのまま貼り付けてください。各質問の答えに最初から入ります。</p>'
+    + '<textarea id="draft" spellcheck="false" placeholder="{ &quot;answers&quot;: { &quot;clinic_name&quot;: &quot;…&quot; } }"></textarea>'
+    + '<p class="err" id="draftErr" role="alert"></p></details></div>'
+    + '<button type="button" class="btn wide" id="btnStart">' + (resumeHtml ? '最初から始める' : '始める') + '</button>';
+  focusH();
+  if (resumeHtml){
+    document.getElementById('btnResume').onclick = function(){
+      S.answers = saved.answers||{}; S.unsure = saved.unsure||{}; S.hp_url = saved.hp_url||'';
+      if (saved.screen==='review'){ go('review'); return; }
+      S.cur = (saved.cur && QMAP[saved.cur]) ? saved.cur : Q[0].key;
+      if (!isVisible(S.cur)) S.cur = visible()[0].key;
+      go('q');
+    };
+    document.getElementById('btnDiscard').onclick = function(){
+      if (!window.confirm('入力の途中の内容を消して、最初から始めますか？')) return;
+      clearStore(); S.answers={}; S.unsure={}; S.hp_url=''; renderStart();
+    };
+  }
+  document.getElementById('btnStart').onclick = function(){
+    var url = document.getElementById('hpUrl').value.trim();
+    var draftTxt = document.getElementById('draft').value.trim();
+    var errEl = document.getElementById('draftErr');
+    S.answers = {}; S.unsure = {};
+    if (draftTxt){
+      var r = applyDraft(draftTxt);
+      if (!r.ok){ document.getElementById('draftBox').open = true; errEl.textContent = r.msg; document.getElementById('draft').focus(); return; }
+    }
+    S.hp_url = url || S.answers.hp_url || '';
+    delete S.answers.hp_url;
+    S.cur = Q[0].key; go('q');
+  };
+}
+
+/* 下書きJSONを各質問の初期値にする（キーまたは日本語の表示名どちらでも可） */
+function applyDraft(txt){
+  var data;
+  try{ data = JSON.parse(txt); }catch(e){ return {ok:false, msg:'下書きの形が正しくありません。担当者から受け取った文字を、最初の { から最後の } まで、そのまま貼り付けてください。'}; }
+  if (!data || typeof data !== 'object') return {ok:false, msg:'下書きの中身が読み取れませんでした。'};
+  var src = (data.answers && typeof data.answers === 'object') ? data.answers : data;
+  var n = 0;
+  Object.keys(src).forEach(function(k){
+    var v = src[k]; if (v==null || v==='') return;
+    if (k==='hp_url'){ S.answers.hp_url = String(v); n++; return; }
+    var q = QMAP[k];
+    var subOwner = null;
+    Q.forEach(function(x){ if (x.sub && x.sub.key===k) subOwner = x; });
+    if (subOwner){
+      if (subOwner.sub.type==='days') S.answers[k] = toDays(v);
+      else S.answers[k] = String(v);
+      n++; return;
+    }
+    if (!q) return;
+    if (q.type==='single'){ var c = toCode(q, v); if (c){ S.answers[k]=c; n++; } }
+    else if (q.type==='multi'){ var arr = (Array.isArray(v)?v:String(v).split(/[、,\s]+/)).map(function(x){return toCode(q,x);}).filter(Boolean); if (arr.length){ S.answers[k]=arr; n++; } }
+    else if (q.type==='days'){ S.answers[k]=toDays(v); n++; }
+    else if (q.type==='tags'){ S.answers[k]=parseTags(Array.isArray(v)?v.join(' '):String(v)).slice(0,5); n++; }
+    else if (q.type==='confirm'){ /* 確認は必ず本人が行う */ }
+    else if (q.type==='textarea'){ S.answers[k]=Array.isArray(v)?v.join('\n'):String(v); n++; }
+    else { S.answers[k]=String(v); n++; }
+  });
+  if (!n) return {ok:false, msg:'下書きの中に、使える項目が見つかりませんでした。'};
+  return {ok:true, n:n};
+}
+function toCode(q, v){
+  v = String(v).trim();
+  for (var i=0;i<q.options.length;i++){ var op=q.options[i]; if (op.v===v || op.label===v) return op.v; }
+  for (i=0;i<q.options.length;i++){ op=q.options[i]; if (v && (op.label.indexOf(v)>=0 || v.indexOf(op.label)>=0)) return op.v; }
+  return null;
+}
+function toDays(v){
+  var arr = Array.isArray(v) ? v : String(v).split(/[、,・\s]+/);
+  var out = [];
+  arr.forEach(function(x){ x=String(x).trim(); DAYS.forEach(function(d){ if ((x===d[0]||x===d[1]||x===d[1]+'曜'||x===d[1]+'曜日'||(d[0]==='holiday'&&x==='祝')) && out.indexOf(d[0])<0) out.push(d[0]); }); });
+  return out;
+}
+function parseTags(s){
+  var out=[]; String(s).split(/[\s、,，]+/).forEach(function(t){ t=t.replace(/^[#＃]+/,'').trim(); if (t && out.indexOf(t)<0) out.push(t); }); return out;
+}
+function isVisible(key){ return visible().some(function(q){return q.key===key;}); }
+
+/* ===== 質問画面 ===== */
+function optHtml(q, op, type, name, checked, isRec){
+  return '<label class="opt"><input type="' + type + '" name="' + name + '" value="' + esc(op.v) + '"' + (checked?' checked':'') + '>'
+    + '<span class="box"><span class="mk" aria-hidden="true"></span><span><span class="lb">' + esc(op.label) + (isRec?'<span class="badge">おすすめ</span>':'') + '</span>'
+    + (op.desc ? '<span class="ds">' + esc(op.desc) + '</span>' : '') + '</span></span></label>';
+}
+function daysHtml(name, selected){
+  return DAYS.map(function(d){ return '<label class="opt"><input type="checkbox" name="' + name + '" value="' + d[0] + '"' + (has(selected,d[0])?' checked':'') + '><span class="box"><span class="mk" aria-hidden="true"></span><span class="lb">' + d[1] + '</span></span></label>'; }).join('');
+}
+function sortedOptions(q){
+  if (!q.rec) return q.options.slice();
+  var recs = Array.isArray(q.rec) ? q.rec : [q.rec];
+  return q.options.filter(function(op){return recs.indexOf(op.v)>=0;}).concat(q.options.filter(function(op){return recs.indexOf(op.v)<0;}));
+}
+function unsureLabel(q){ return q.rec ? 'わからない（おすすめにする）' : (q.unsureTo ? 'わからない（「' + labelOf(q, q.unsureTo) + '」として進める）' : 'わからない（あとで確認する）'); }
+function labelOf(q, v){ for (var i=0;i<q.options.length;i++) if (q.options[i].v===v) return q.options[i].label; return v; }
+
+function renderQ(){
+  var vis = visible();
+  var idx = vis.findIndex(function(q){return q.key===S.cur;});
+  if (idx<0){ idx=0; S.cur=vis[0].key; }
+  var q = vis[idx];
+  var a = S.answers[q.key];
+  var un = !!S.unsure[q.key];
+  var pct = Math.round((idx)/vis.length*100);
+  var h = '<div class="prog" aria-label="進み具合"><span>' + vis.length + '問中 <b>' + (idx+1) + '</b>問目</span><span class="bar" aria-hidden="true"><i style="width:' + pct + '%"></i></span></div>'
+    + '<span class="cat">' + esc(q.cat) + '</span>'
+    + '<h2 class="q" tabindex="-1" id="h">' + esc(q.title) + '</h2>'
+    + (q.help ? '<p class="lead" id="qhelp">' + esc(q.help) + '</p>' : '');
+  var recs = q.rec ? (Array.isArray(q.rec)?q.rec:[q.rec]) : [];
+  if (q.type==='single' || q.type==='multi'){
+    var t = q.type==='single' ? 'radio' : 'checkbox';
+    h += '<fieldset class="opts" aria-describedby="qhelp"><legend>' + esc(q.title) + '</legend>';
+    sortedOptions(q).forEach(function(op){
+      var ck = !un && (q.type==='single' ? a===op.v : has(a, op.v));
+      h += optHtml(q, op, t, 'ans', ck, recs.indexOf(op.v)>=0);
+    });
+    h += '<label class="opt unsure"><input type="' + t + '" name="' + (t==='radio'?'ans':'uns') + '" value="__unsure"' + (un?' checked':'') + '><span class="box"><span class="mk" aria-hidden="true"></span><span><span class="lb">' + esc(unsureLabel(q)) + '</span></span></span></label>';
+    h += '</fieldset>';
+    if (q.sub) h += '<div id="subArea"></div>';
+    h += '<div id="noteArea"></div>';
+  } else if (q.type==='days'){
+    h += '<fieldset class="opts days"><legend>' + esc(q.title) + '</legend>' + daysHtml('ans', un?[]:a) + '</fieldset>';
+    h += '<fieldset class="opts"><legend>わからない</legend><label class="opt unsure"><input type="checkbox" name="uns" value="__unsure"' + (un?' checked':'') + '><span class="box"><span class="mk" aria-hidden="true"></span><span><span class="lb">わからない（あとで確認する）</span></span></span></label></fieldset>';
+  } else if (q.type==='text' || q.type==='tags'){
+    var val = q.type==='tags' ? (a||[]).join(' ') : (a||'');
+    h += '<div style="margin-top:16px"><label class="fl" for="inp">' + (q.required?'入力してください（必須）':'入力してください') + '</label><input type="text" id="inp" placeholder="' + esc(q.placeholder||'') + '" value="' + esc(val) + '"></div>';
+    if (q.type==='tags') h += '<p class="hint" id="tagCount"></p>';
+  } else if (q.type==='textarea'){
+    h += '<div style="margin-top:16px"><label class="fl" for="inp">入力してください</label><textarea id="inp" placeholder="' + esc(q.placeholder||'') + '">' + esc(a||'') + '</textarea></div>';
+  } else if (q.type==='confirm'){
+    h += '<fieldset class="opts"><legend>' + esc(q.title) + '</legend>' + optHtml(q, {v:'yes', label:q.confirmLabel}, 'checkbox', 'ans', a===true, false) + '</fieldset>';
+  }
+  h += '<p class="err" id="err" role="alert"></p>';
+  h += '<p class="saved">入力した内容は、このブラウザに自動で保存されます。</p>';
+  app.innerHTML = h;
+  nav.classList.remove('hidden');
+  btnBack.textContent = '戻る';
+  btnBack.disabled = false;
+  btnNext.textContent = S.fromReview ? '確認画面へ戻る' : (idx===vis.length-1 ? '確認画面へ' : '進む');
+
+  wireQ(q);
+  focusH();
+}
+
+function wireQ(q){
+  var inputs = app.querySelectorAll('input[name=ans]');
+  var unsEl = app.querySelector('input[value=__unsure]');
+  function onChange(){ readQ(q); save(); renderSub(q); renderNote(q); document.getElementById('err').textContent=''; }
+  if (q.type==='multi' || q.type==='days'){
+    Array.prototype.forEach.call(inputs, function(el){ el.addEventListener('change', function(){ if (el.checked && unsEl) unsEl.checked=false; onChange(); }); });
+    if (unsEl) unsEl.addEventListener('change', function(){ if (unsEl.checked) Array.prototype.forEach.call(inputs, function(el){ el.checked=false; }); onChange(); });
+  } else if (q.type==='single' || q.type==='confirm'){
+    Array.prototype.forEach.call(app.querySelectorAll('input[name=ans]'), function(el){ el.addEventListener('change', onChange); });
+  }
+  var inp = document.getElementById('inp');
+  if (inp){
+    inp.addEventListener('input', function(){ readQ(q); save(); if (q.type==='tags') tagInfo(); document.getElementById('err').textContent=''; });
+    if (inp.tagName==='INPUT') inp.addEventListener('keydown', function(e){ if (e.key==='Enter' && !e.isComposing){ e.preventDefault(); next(); } });
+    if (q.type==='tags') tagInfo();
+  }
+  renderSub(q); renderNote(q);
+}
+function tagInfo(){
+  var el = document.getElementById('tagCount'); if (!el) return;
+  var tags = parseTags(document.getElementById('inp').value);
+  el.textContent = tags.length ? ('いま ' + tags.length + '個：' + tags.map(function(t){return '#'+t;}).join(' ') + (tags.length>5?'（5個までにしてください）':'')) : '';
+  el.style.color = tags.length>5 ? 'var(--danger)' : '';
+}
+function readQ(q){
+  var k = q.key;
+  if (q.type==='single'){
+    var el = app.querySelector('input[name=ans]:checked');
+    if (!el){ delete S.answers[k]; delete S.unsure[k]; return; }
+    if (el.value==='__unsure'){ S.unsure[k]=true; S.answers[k] = q.rec || q.unsureTo || null; }
+    else { delete S.unsure[k]; S.answers[k]=el.value; }
+  } else if (q.type==='multi' || q.type==='days'){
+    var unsEl = app.querySelector('input[value=__unsure]');
+    if (unsEl && unsEl.checked){ S.unsure[k]=true; S.answers[k] = q.rec ? q.rec.slice() : []; return; }
+    delete S.unsure[k];
+    S.answers[k] = Array.prototype.map.call(app.querySelectorAll('input[name=ans]:checked'), function(e){return e.value;});
+  } else if (q.type==='confirm'){
+    S.answers[k] = !!app.querySelector('input[name=ans]:checked');
+  } else if (q.type==='tags'){
+    S.answers[k] = parseTags(document.getElementById('inp').value);
+  } else {
+    S.answers[k] = document.getElementById('inp').value;
+  }
+}
+function renderSub(q){
+  var area = document.getElementById('subArea'); if (!area || !q.sub) return;
+  var a = S.answers[q.key];
+  var on = (q.type==='multi') ? has(a, q.sub.when) : a===q.sub.when;
+  if (S.unsure[q.key]) on = false;
+  if (!on){ area.innerHTML=''; return; }
+  if (area.getAttribute('data-k')===q.sub.key && area.innerHTML) return;
+  var sk = q.sub.key, sv = S.answers[sk];
+  var h = '<div class="sub-in">';
+  if (q.sub.type==='text'){
+    h += '<label class="fl" for="subInp">' + esc(q.sub.label) + '</label><input type="text" id="subInp" placeholder="' + esc(q.sub.placeholder||'') + '" value="' + esc(sv||'') + '">';
+  } else if (q.sub.type==='color'){
+    var c = /^#[0-9a-fA-F]{6}$/.test(sv||'') ? sv : '#1F5A57';
+    h += '<label class="fl" for="subInp">' + esc(q.sub.label) + '</label><div class="color-row"><input type="color" id="subInp" value="' + c + '"><input type="text" id="subHex" value="' + c + '" style="max-width:150px" aria-label="色の番号（#から始まる6けた）"></div><p class="hint">四角を押して色を選ぶか、色の番号（例：#1F5A57）を入れてください。</p>';
+    if (!sv) S.answers[sk] = c;
+  } else if (q.sub.type==='days'){
+    h += '<fieldset class="opts days" style="margin:0"><legend>' + esc(q.sub.label) + '</legend><span class="fl" aria-hidden="true" style="grid-column:1/-1">' + esc(q.sub.label) + '（複数選べます）</span>' + daysHtml('subDays', sv||[]) + '</fieldset>';
+  }
+  h += '</div>';
+  area.innerHTML = h; area.setAttribute('data-k', sk);
+  var si = document.getElementById('subInp');
+  if (q.sub.type==='text') si.addEventListener('input', function(){ S.answers[sk]=si.value; save(); });
+  if (q.sub.type==='color'){
+    var hx = document.getElementById('subHex');
+    si.addEventListener('input', function(){ S.answers[sk]=si.value.toUpperCase(); hx.value=si.value.toUpperCase(); save(); });
+    hx.addEventListener('input', function(){ var v=hx.value.trim(); if (v.charAt(0)!=='#') v='#'+v; if (/^#[0-9a-fA-F]{6}$/.test(v)){ S.answers[sk]=v.toUpperCase(); si.value=v.toLowerCase(); save(); } });
+  }
+  if (q.sub.type==='days') Array.prototype.forEach.call(area.querySelectorAll('input[name=subDays]'), function(el){ el.addEventListener('change', function(){ S.answers[sk]=Array.prototype.map.call(area.querySelectorAll('input[name=subDays]:checked'), function(e){return e.value;}); save(); }); });
+}
+function renderNote(q){
+  var area = document.getElementById('noteArea'); if (!area) return;
+  var t = q.noteIf ? q.noteIf(S.answers) : '';
+  if (q.key==='person_consent' && S.answers.person_consent==='pending') t = '同意書がそろうまでは、先生の写真やイラストを使わない投稿で始めます。';
+  if (q.key==='person_mode' && S.answers.person_mode==='fictional_illust') t = '架空の先生には名前を付けず、画像に「イメージ」と表示します。実在の先生と誤解されないようにするためです。';
+  area.innerHTML = t ? '<div class="note">' + esc(t) + '</div>' : '';
+}
+
+function validate(q){
+  var a = S.answers[q.key];
+  if (q.type==='text' && q.required && !(a||'').trim()) return '入力してください。';
+  if (q.type==='single' && !a && !S.unsure[q.key]) return 'どれか1つを選んでください。迷ったら「わからない」を選べます。';
+  if (q.type==='confirm' && a!==true) return 'この表示は必須です。確認のチェックを入れてください。';
+  if (q.type==='tags' && (a||[]).length>5) return 'ハッシュタグは5個までにしてください。';
+  if (q.sub && q.sub.type==='days' && a===q.sub.when && !(S.answers[q.sub.key]||[]).length) return '投稿する曜日を1つ以上選んでください。';
+  return '';
+}
+function next(){
+  var vis = visible();
+  var q = QMAP[S.cur];
+  readQ(q);
+  var e = validate(q);
+  if (e){ var el=document.getElementById('err'); el.textContent=e; return; }
+  save();
+  vis = visible();
+  var idx = vis.findIndex(function(x){return x.key===S.cur;});
+  if (S.fromReview){
+    // 確認画面から来た場合でも、新しく出てきた未回答の質問があればそこへ進む
+    for (var i=idx+1;i<vis.length;i++){ if (!(vis[i].key in S.answers) && !S.unsure[vis[i].key] && needsAnswer(vis[i])){ S.cur=vis[i].key; go('q'); return; } }
+    go('review'); return;
+  }
+  if (idx>=vis.length-1){ go('review'); return; }
+  S.cur = vis[idx+1].key; go('q');
+}
+function needsAnswer(q){ return q.type==='single' || q.type==='confirm' || (q.type==='text' && q.required); }
+function back(){
+  if (S.screen==='review'){ var vis=visible(); S.cur=vis[vis.length-1].key; S.fromReview=false; go('q'); return; }
+  var q = QMAP[S.cur]; readQ(q); save();
+  if (S.fromReview){ go('review'); return; }
+  var vis2 = visible();
+  var idx = vis2.findIndex(function(x){return x.key===S.cur;});
+  if (idx<=0){ go('start'); return; }
+  S.cur = vis2[idx-1].key; go('q');
+}
+btnNext.addEventListener('click', function(){ if (S.screen==='q') next(); });
+btnBack.addEventListener('click', back);
+
+/* ===== 確認画面 ===== */
+function display(q){
+  var a = S.answers[q.key];
+  if (q.type==='single'){
+    if (!a) return '';
+    var s = labelOf(q, a);
+    if (q.sub && a===q.sub.when){
+      var sv = S.answers[q.sub.key];
+      if (q.sub.type==='color') s += '（' + (sv||'') + '）';
+      if (q.sub.type==='days') s += '（' + daysLabel(sv) + '）';
+    }
+    return s;
+  }
+  if (q.type==='multi'){
+    if (!a || !a.length) return '';
+    return a.map(function(v){ var l=labelOf(q,v); if (q.sub && v===q.sub.when && S.answers[q.sub.key]) l += '（' + S.answers[q.sub.key] + '）'; return l; }).join('、');
+  }
+  if (q.type==='days') return daysLabel(a);
+  if (q.type==='tags') return (a||[]).map(function(t){return '#'+t;}).join(' ');
+  if (q.type==='confirm') return a===true ? '確認済み' : '';
+  return (a||'').trim();
+}
+function daysLabel(a){ return (a||[]).map(function(v){ for (var i=0;i<DAYS.length;i++) if (DAYS[i][0]===v) return DAYS[i][1]; return v; }).join('・'); }
+function shortTitle(q){
+  var m = {clinic_name:'医院名',specialties:'診療科',area:'地域',director_name:'院長名',closed_days:'休診日',audience:'見てほしい人',recruit_roles:'募集している職種',focus_treatments:'力を入れたい診療',not_offered:'行っていない診療',disclose:'出してよい情報',design_color:'医院の色',design_mood:'雰囲気',person_mode:'人物の出し方',person_consent:'顔・写真の同意書',person_photos:'使う写真',illust_style:'イラストのタッチ',voice:'読み上げの声',voice_style:'先生が話す形',bgm:'音楽（BGM）',post_days:'投稿する曜日',reel_ratio:'動画の本数',content_mix:'中身の割合',cta:'最後にすすめること',hashtags:'固定のハッシュタグ',ai_disclosure:'「AI作成」の表示',notes:'そのほかのメモ'};
+  return m[q.key] || q.title;
+}
+function renderReview(){
+  var vis = visible();
+  var missing = vis.filter(function(q){ return needsAnswer(q) && validate(q); });
+  var h = '<h1 tabindex="-1" id="h">内容を確認してください</h1>'
+    + '<p class="lead">直したい項目は「直す」を押すと、その質問に戻れます。</p>';
+  if (missing.length) h += '<div class="note" role="alert">まだ答えていない質問があります：' + missing.map(function(q){return esc(shortTitle(q));}).join('、') + '</div>';
+  h += '<div class="card" style="padding-top:6px"><dl class="rv">';
+  h += '<div class="it"><dt>ホームページ</dt><dd>' + (S.hp_url ? esc(S.hp_url) : '<span class="empty">未入力</span>') + '</dd><button type="button" class="btn sub fix" data-go="__start" aria-label="ホームページを直す">直す</button></div>';
+  var lastCat = '';
+  vis.forEach(function(q){
+    if (q.cat!==lastCat){ h += '</dl><p class="rv-h">' + esc(q.cat) + '</p><dl class="rv">'; lastCat=q.cat; }
+    var d = display(q);
+    h += '<div class="it"><dt>' + esc(shortTitle(q)) + (S.unsure[q.key]?'<span class="uns">わからない→' + (q.rec?'おすすめ':'あとで確認') + '</span>':'') + '</dt><dd>' + (d ? esc(d) : '<span class="empty">' + (S.unsure[q.key] ? 'あとで確認' : '未入力') + '</span>') + '</dd>'
+      + '<button type="button" class="btn sub fix" data-go="' + q.key + '" aria-label="' + esc(shortTitle(q)) + 'を直す">直す</button></div>';
+  });
+  h += '</dl></div>';
+  h += '<p class="err" id="err" role="alert"></p>';
+  h += '<button type="button" class="btn wide" id="btnMake"' + (missing.length?' disabled':'') + '>この内容でカルテを作る</button>';
+  h += '<div class="row" style="margin-top:12px"><button type="button" class="btn plain" id="btnRevBack">最後の質問に戻る</button></div>';
+  app.innerHTML = h;
+  nav.classList.add('hidden');
+  Array.prototype.forEach.call(app.querySelectorAll('[data-go]'), function(b){
+    b.addEventListener('click', function(){
+      var k = b.getAttribute('data-go');
+      if (k==='__start'){ go('start'); return; }
+      S.cur = k; S.fromReview = true; go('q');
+    });
+  });
+  document.getElementById('btnRevBack').onclick = back;
+  document.getElementById('btnMake').onclick = function(){ S.result = buildJson(); go('result'); };
+  focusH();
+}
+
+/* ===== カルテのJSON ===== */
+function buildJson(){
+  var vis = visible(), out = {hp_url: S.hp_url || null};
+  Q.forEach(function(q){
+    var shown = vis.indexOf(q) >= 0;
+    var a = S.answers[q.key];
+    var v;
+    if (!shown) v = null;
+    else if (q.type==='text' || q.type==='textarea') v = (a||'').trim() || null;
+    else if (q.type==='multi' || q.type==='days' || q.type==='tags') v = Array.isArray(a) ? a.slice() : [];
+    else if (q.type==='confirm') v = a===true;
+    else v = a || null;
+    if (q.key==='focus_treatments' && v) v = v.split(/\n+/).map(function(s){return s.trim();}).filter(Boolean);
+    if (q.key==='recruit_roles' && v) v = v.split(/[、,，]+/).map(function(s){return s.trim();}).filter(Boolean);
+    out[q.key] = v;
+    if (q.sub){
+      var on = shown && ((q.type==='multi') ? has(a, q.sub.when) : a===q.sub.when);
+      var sv = S.answers[q.sub.key];
+      out[q.sub.key] = on ? (q.sub.type==='days' ? (sv||[]) : ((sv||'').trim() || null)) : null;
+    }
+  });
+  var uns = Object.keys(S.unsure).filter(function(k){ return S.unsure[k] && vis.some(function(q){return q.key===k;}); });
+  return {version:1, created_at:new Date().toISOString(), answers:out, unsure_keys:uns};
+}
+function renderResult(){
+  var txt = JSON.stringify(S.result, null, 2);
+  var name = (S.answers.clinic_name||'clinic').replace(/[\\\/:*?"<>|\s]+/g,'_');
+  var d = new Date(); var ymd = d.getFullYear() + ('0'+(d.getMonth()+1)).slice(-2) + ('0'+d.getDate()).slice(-2);
+  var fname = 'karte_' + name + '_' + ymd + '.json';
+  app.innerHTML = '<h1 tabindex="-1" id="h">カルテができました</h1>'
+    + '<p class="lead">下の内容をコピーするか、ファイルとして保存して、担当者に送ってください。</p>'
+    + '<div class="card"><div class="row"><button type="button" class="btn" id="btnCopy" style="flex:1">内容をコピーする</button><button type="button" class="btn sub" id="btnDl" style="flex:1">ファイルで保存する</button></div>'
+    + '<p class="msg" id="msg" role="status"></p>'
+    + '<pre class="json" id="jsonOut" tabindex="0" aria-label="カルテの内容">' + esc(txt) + '</pre>'
+    + '<p class="hint">保存されるファイル名：' + esc(fname) + '</p></div>'
+    + '<div class="row"><button type="button" class="btn sub" id="btnToReview">確認画面に戻って直す</button><button type="button" class="btn plain" id="btnReset">入力を消して、別の医院のカルテを作る</button></div>';
+  nav.classList.add('hidden');
+  var msg = document.getElementById('msg');
+  document.getElementById('btnCopy').onclick = function(){
+    function fallback(){
+      try{ var ta=document.createElement('textarea'); ta.value=txt; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); var ok=document.execCommand('copy'); document.body.removeChild(ta); msg.textContent = ok ? 'コピーしました。' : 'コピーできませんでした。下の文字を長押しして選び、コピーしてください。'; }
+      catch(e){ msg.textContent='コピーできませんでした。下の文字を長押しして選び、コピーしてください。'; }
+    }
+    if (navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(txt).then(function(){ msg.textContent='コピーしました。'; }, fallback); }
+    else fallback();
+  };
+  document.getElementById('btnDl').onclick = function(){
+    try{
+      var blob = new Blob([txt], {type:'application/json'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+      msg.textContent = 'ファイルを保存しました（' + fname + '）。';
+    }catch(e){ msg.textContent = '保存できませんでした。「内容をコピーする」を使ってください。'; }
+  };
+  document.getElementById('btnToReview').onclick = function(){ go('review'); };
+  document.getElementById('btnReset').onclick = function(){
+    if (!window.confirm('入力した内容を消して、最初の画面に戻りますか？（作ったカルテを保存していない場合は、先に保存してください）')) return;
+    clearStore(); S.answers={}; S.unsure={}; S.hp_url=''; S.result=null; go('start');
+  };
+  focusH();
+}
+
+/* ===== 画面切り替え ===== */
+function go(screen){
+  S.screen = screen;
+  if (screen!=='q') S.fromReview = false;
+  if (screen==='start') renderStart();
+  else if (screen==='q') renderQ();
+  else if (screen==='review') renderReview();
+  else if (screen==='result') renderResult();
+  if (screen!=='start') save();
+  window.scrollTo(0,0);
+}
+function focusH(){ var h=document.getElementById('h'); if (h) try{ h.focus({preventScroll:true}); }catch(e){ h.focus(); } }
+
+go('start');
+})();
+</script>
+</body>
+</html>

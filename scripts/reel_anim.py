@@ -44,12 +44,14 @@ class Writer:
         out.parent.mkdir(parents=True, exist_ok=True)
         self.out = out
         self.n = 0
+        self.ff = ff
+        # まず映像だけを書き出し、音（無音）は書き終わってから付ける。
+        # 映像と無音を同時に作ると、環境によっては ffmpeg が音を先に作りすぎて止まる（GitHub Actions で発生）。
+        self.tmp = out.with_name(out.stem + "_noaudio.mp4")
         self.p = subprocess.Popen([
             ff, "-y", "-loglevel", "error",
             "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
-            "-f", "lavfi", "-t", f"{max(total_sec, 600) + 1:.2f}", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100",
-            "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-preset", "medium", "-crf", "21", "-pix_fmt", "yuv420p",
-            "-c:a", "aac", "-b:a", "96k", "-shortest", "-movflags", "+faststart", str(out),
+            "-c:v", "libx264", "-preset", "medium", "-crf", "21", "-pix_fmt", "yuv420p", str(self.tmp),
         ], stdin=subprocess.PIPE)
 
     def put(self, im: Image.Image) -> None:
@@ -61,6 +63,16 @@ class Writer:
         self.p.wait()
         if self.p.returncode:
             raise RuntimeError("ffmpeg でリールを作れませんでした")
+        sec = self.n / FPS
+        r = subprocess.run([
+            self.ff, "-y", "-loglevel", "error", "-i", str(self.tmp),
+            "-f", "lavfi", "-t", f"{sec:.2f}", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100",
+            "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "96k",
+            "-t", f"{sec:.2f}", "-movflags", "+faststart", str(self.out),
+        ], timeout=300)
+        self.tmp.unlink(missing_ok=True)
+        if r.returncode:
+            raise RuntimeError("ffmpeg でリールに音を付けられませんでした")
         return self.n / FPS
 
 

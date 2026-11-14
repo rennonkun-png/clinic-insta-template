@@ -64,7 +64,7 @@ async def _synth_all(texts: list[str], work: Path, voice: str, rate: str) -> lis
         mp3 = work / f"n{i:02d}.mp3"
         for attempt in range(3):
             try:
-                await edge_tts.Communicate(tx, voice, rate=rate).save(str(mp3))
+                await asyncio.wait_for(edge_tts.Communicate(tx, voice, rate=rate).save(str(mp3)), timeout=60)  # つながらないまま止まらないように
                 break
             except Exception:  # 一時的な失敗は少し待ってやり直す
                 if attempt == 2:
@@ -77,7 +77,7 @@ async def _synth_all(texts: list[str], work: Path, voice: str, rate: str) -> lis
 def _gain_to(path: Path, target_db: float) -> float:
     """曲の平均音量を測り、target_db にそろえる倍率を返す。"""
     r = subprocess.run([ffmpeg_path(), "-i", str(path), "-t", "60", "-af", "volumedetect", "-vn", "-f", "null", "-"],
-                       capture_output=True, text=True, encoding="utf-8", errors="ignore")
+                       capture_output=True, text=True, encoding="utf-8", errors="ignore", timeout=120)
     m = re.search(r"mean_volume: (-?[0-9.]+)", r.stderr)
     return 10 ** ((target_db - float(m.group(1))) / 20) if m else 1.0
 
@@ -104,13 +104,14 @@ class Narration:
         ff = ffmpeg_path()
         work.mkdir(parents=True, exist_ok=True)
         try:
+            print(f"[voice] 読み上げを作ります（{len(lines)} 場面）", flush=True)
             mp3s = asyncio.run(_synth_all([speakable(x) for x in lines], work, voice, rate))
             for mp3 in mp3s:
                 if mp3 is None:
                     self.items.append(None)
                     continue
                 wav = mp3.with_suffix(".wav")
-                subprocess.run([ff, "-y", "-loglevel", "error", "-i", str(mp3), "-ar", "44100", "-ac", "2", str(wav)], check=True)
+                subprocess.run([ff, "-y", "-loglevel", "error", "-i", str(mp3), "-ar", "44100", "-ac", "2", str(wav)], check=True, timeout=120)
                 self.items.append((wav, _duration(wav)))
         except Exception as e:  # 音声が作れなくても動画は出す
             print(f"[voice] 読み上げを作れなかったため無音にします: {e}")
@@ -188,7 +189,8 @@ class Narration:
         filt.append(f"{''.join(labels)}amix=inputs={len(labels)}:normalize=0,apad[aout]")
         args += ["-filter_complex", ";".join(filt), "-map", "0:v", "-map", "[aout]",
                  "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-t", f"{total_sec:.2f}", "-movflags", "+faststart", str(video)]
-        subprocess.run(args, check=True)
+        print(f"[voice] 声 {len(segs)} 場面と BGM（{'あり' if music else 'なし'}）を重ねます", flush=True)
+        subprocess.run(args, check=True, timeout=600)
         tmp.unlink(missing_ok=True)
         import shutil
         shutil.rmtree(self.work, ignore_errors=True)  # 作業用の音声は消す

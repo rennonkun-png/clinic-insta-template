@@ -1,0 +1,11 @@
+[
+  {
+    "name": "genova",
+    "repo": "rennonkun-png/clinic-insta-own",
+    "content_key": "webmarketing",
+    "threshold": 14,
+    "batch": 30,
+    "approval": "auto",
+    "karte": null
+  }
+]
