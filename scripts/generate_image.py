@@ -308,7 +308,8 @@ def wrap(d: ImageDraw.ImageDraw, text: str, f: ImageFont.FreeTypeFont, max_w: in
                 cut = next((k for k in outside if _good_break(units, k)), outside[0])
             else:
               for k in range(cut, max(1, cut - 3), -1):
-                if _good_break(units, k) and d_at[k] <= 0:
+                # 区切りのよい所でも、行が短くなりすぎる（6割未満）なら使わない（「診療後の」だけの行を作らない）
+                if _good_break(units, k) and d_at[k] <= 0 and (k == cut or d.textlength("".join(units[:k]), font=f) >= max_w * 0.6):
                     cut = k
                     break
               else:

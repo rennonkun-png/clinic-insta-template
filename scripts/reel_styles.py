@@ -137,6 +137,8 @@ class Base:
                 if k == i - 1 and frac > 0:
                     d.rounded_rectangle([x0, y0, int(x0 + max(9, seg * frac)), y0 + 9], radius=4, fill=color)
 
+    card_fill = (255, 255, 255)  # カードの地の色（背景が白の場面では薄い灰色にして、カードが背景に溶けないようにする）
+
     def kind_card(self, pt: dict, w: int) -> Image.Image | None:
         """リール用のカード。カルーセルの中身をそのまま縮めず、要点（×→○、Q→A、数字、項目3つまで）だけを大きな文字で出す。"""
         kind = pt.get("kind", "default")
@@ -199,7 +201,9 @@ class Base:
         hh += P - (gap if wrapped else 0)
         card = Image.new("RGBA", (w, hh), (0, 0, 0, 0))
         d = ImageDraw.Draw(card)
-        d.rounded_rectangle([0, 0, w - 1, hh - 1], radius=int(W * 0.04), fill=(255, 255, 255, 255))
+        light_card = self.card_fill != (255, 255, 255)
+        d.rounded_rectangle([0, 0, w - 1, hh - 1], radius=int(W * 0.04), fill=self.card_fill + (255,),
+                            outline=(222, 225, 230, 255) if light_card else None, width=3 if light_card else 0)
         y = P
         self._rows = []
         if big is not None:
@@ -256,7 +260,7 @@ class Base:
         empty = card.copy()
         de = ImageDraw.Draw(empty)
         for r0, r1 in rows:
-            de.rectangle([int(W * 0.02), r0, card.width - int(W * 0.02), r1], fill=(255, 255, 255, 255))
+            de.rectangle([int(W * 0.02), r0, card.width - int(W * 0.02), r1], fill=self.card_fill + (255,))
         span = max(0.35 * len(rows), (dur - t0) * 0.62)  # 読み上げの前半〜6割ほどで全部出しきる
         out = empty
         latest = None
@@ -326,6 +330,7 @@ class Telop(Base):
         n = self.n
         bg_col = self.bgs()[i % 3] if pt.get("kind") != "key" else BLACK
         light = bg_col == (255, 255, 255)
+        self.card_fill = (244, 246, 249) if light else (255, 255, 255)
         ink = ns.INK if light else (255, 255, 255)
         accent = n.primary if light else designs._yellow(n)
         bg = Image.new("RGB", (W, H), bg_col)
