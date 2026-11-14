@@ -72,6 +72,11 @@ def main() -> int:
     if not ok and os.environ.get("FORCE") != "1":
         log(f"本日は投稿しません: {reason}")
         return 0
+    # 同じ日に2回投稿しない（手動で先に投稿した日に、決まった時刻の実行が来たときなど）
+    if not dry and os.environ.get("FORCE") != "1" and any(
+            h.get("date") == d.isoformat() and (h.get("media_id") or h.get("permalink")) for h in state.get("posted", [])):
+        log(f"本日（{d}）はもう投稿済みのため、投稿しません")
+        return 0
 
     posts = load_posts(cfg, learning)
     post = pick_post(cfg, posts, d, state, learning)
