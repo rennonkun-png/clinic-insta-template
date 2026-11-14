@@ -1,71 +1,64 @@
 ---
 name: insta-auto-produce
-description: Instagram 自動投稿の「ネタの補充」を、裏で自動で行う手順。ネタの残りを数え、少なければ新しい投稿を作り、採点表（RUBRIC.md）の全項目が5点になるまで作り直してから投稿の列に足す。予定タスク（毎晩）から呼ばれるほか、「ネタを補充して」「医院のネタを作って」と言われたときに使う。
+description: Instagram 自動投稿の「毎週のネタづくり」を裏で自動で行う手順。毎週月曜に、分析データを見て次の週の7本を作り、採点表（RUBRIC.md）の全項目5点まで直し、分析サイトの「確認待ち」に置いて木曜の夜を期限に確認を待つ。期限後（または全部 OK）に投稿の予定へ入れる。予定タスク（毎晩）から呼ばれるほか、「ネタを作って」「医院のネタを作って」と言われたときに使う。
 ---
 
-# ネタの自動補充（5点満点になるまで作り直す）
+# 毎週のネタづくり（作る → 確認待ち → 期限後に自動で予定へ）
 
-依頼主は旅河さん（英語が読めない。報告・メモ・コミットの文はすべて日本語）。
-目的: 毎日の自動投稿が、ネタ切れで同じ投稿の出し直しにならないようにする。品質は「お客様（医院）に納品できる」こと。
+依頼主は旅河さん（たびかわ。「旅川」と書かない。英語が読めない。報告・メモ・コミット文・カレンダーの文はすべて日本語）。
+品質の基準は「お客様（医院）に納品できる」こと。
 
 **大原則**
-- 採点表 `.claude/skills/insta-quality-check/RUBRIC.md` の**全項目が5点**の投稿だけを足す。4点以下が1つでもあれば直す。直しきれないものは捨てる（足さない）
-- 採点は、作った本人ではない別のエージェントが行う。作った理由・意図は渡さない（作品と採点表だけを渡す）
-- 毎日の投稿そのものには Claude を使わない（GitHub Actions のプログラムが行う）。Claude を使うのは、この補充のときだけ
-- 既存の投稿（content/webmarketing.json など）は書き換えない。新しい投稿は `content/generated.json` に足す
-- Instagram に直接投稿しない。config・ワークフロー・Secrets は変えない
-- 途中で Claude の利用上限に当たったら、作業フォルダに途中経過を残して終わる。次の回は続きから始める
+- 採点表 `.claude/skills/insta-quality-check/RUBRIC.md` の**全項目が5点**の投稿だけを確認待ちに出す。採点は作った本人ではない別のエージェント（作った理由は渡さない）
+- 旅河さんの確認は**任意**。期限（その週の木曜 23:59 日本時間）までは予定に入れずに待ち、期限を過ぎたら自動で入れる。全部に OK が付いたら期限を待たずに入れる
+- 毎日の投稿・毎晩の記録には Claude を使わない（GitHub Actions のプログラム）。Claude を使うのは、この手順のときだけ
+- Instagram に直接投稿しない。config・ワークフロー・Secrets は変えない。既存の content/webmarketing.json などは書き換えない
+- トークン（config/operator.json）は画面・ログ・コミットに出さない。曲のファイル（mp3）は公開リポジトリに入れない
+- Claude の利用上限に当たったら、作業フォルダに途中経過を残して終わる。次の回は続きから
 
-## 0. 作業フォルダと対象
-- 作業フォルダ: `%USERPROFILE%\insta-work\<対象名>\`（一時フォルダではなく、消えない場所）。中に `log.md`（毎回の結果を追記）と `gen/`（下書き）を置く
-- 対象（targets）は `.claude/skills/insta-auto-produce/targets.json` に書く。1件ごとに:
-  - `name`（例: genova）、`repo`（例: rennonkun-png/clinic-insta-own）、`content_key`（例: webmarketing）、`threshold`（残りがこの本数以下で補充。既定14）、`batch`（1回に足す本数。既定30）、`approval`（"auto" = 合格したら自動で足す／"first" = 初回だけ旅河さんの OK を待つ）、`karte`（医院のときのカルテ JSON のパス）
-- GitHub の操作には、テンプレートのフォルダの `config/operator.json` の `github_token` を使う。トークンは画面・ログ・コミットに絶対に出さない（`***` に置き換える）
+## 場所
+- テンプレート（作業の起点）: C:\Users\user\Desktop\インスタ
+- 作業フォルダ（消えない場所）: `%USERPROFILE%\insta-work\<対象名>\`。`log.md`（毎回1行以上）、`repo/`（投稿用リポジトリの clone）、`analytics/`（分析リポジトリの clone）、`week/<週の月曜の日付>/`（下書き・描画物・状態 state.json）
+- 対象の一覧: `.claude/skills/insta-auto-produce/targets.json`（name, repo, content_key, analytics_account, approval など）
+- 分析リポジトリ（非公開）: rennonkun-png/insta-analytics。サイトは https://insta-analytics-jvi.pages.dev （Google ログイン）
+  - 確認待ちの一覧: `site/data/<account>/review.json`、旅河さんの判断: `site/data/<account>/review_decisions.json`、描画物: `site/review/<account>/<週>/`
+- GitHub 操作は config/operator.json の github_token（https://x-access-token:***@github.com/... で push。出力は *** に置き換える）
 
-## 1. 残りを数える（無料）
-```
-git clone（なければ）/ git pull で作業フォルダの repo/ を最新にする
-python -X utf8 scripts/stock.py --root <作業フォルダ>/repo --threshold <threshold>
-```
-- 終了コード 0（補充は不要）なら、log.md に1行（日付・残り本数・使い切る日）を書いて終わる。旅河さんへの連絡はしない
-- 終了コード 2 なら補充に進む
+## 毎晩やること（予定タスクから。上から順に、当てはまるものだけ）
 
-## 2. 新しいネタの題材を決める
-- 既存の全投稿（content/*.json と content/generated.json）の title・id・要点と、state/posted.json を一覧にし、**同じ話題・同じ文例・同じ例え**を避ける
-- GENOVA（院長向けの WEB 集患）: 院長が明日から自院で試せる具体的な話。ツールを使う話なら、確認済み URL（docs/production/CONTENT_SPEC.md）のツールだけ
-- 医院: カルテ（docs/karte_schema.md の形）の `focus_treatments` を中心に、`not_offered` の診療は扱わない。HP（`hp_url`）の内容に合わせ、HP の文章は写さない。医療広告ガイドラインの確認は `anthropic-skills:medical-advertising-compliance` を使う
-- 題材の一覧を `gen/topics.md` に書く（batch 本＋予備5本）
+### A. 状態を読む（無料）
+1. repo/ と analytics/ を pull。`python -X utf8 scripts/stock.py --root <repo>` で在庫を数える
+2. 今週の state.json（無ければ「まだ作っていない」）と review_decisions.json を読む
+3. 何もすることが無ければ log.md に1行書いて終わる（連絡しない）
 
-## 3. 下書き（10本ずつ、軽いモデルで）
-- サブエージェント（model: sonnet）に10本ずつ任せる。渡すもの: `docs/production/CONTENT_SPEC.md`、RUBRIC.md、担当の題材、既存投稿の一覧（避ける話題）、出力先 `gen/batch_K.json`
-- 各投稿に `category`（GENOVA は "webmarketing"）を必ず書く。`id` は既存と重ならない英小文字のハイフン区切り
+### B. 月曜（日本時間）で、今週の分をまだ作っていない → 作る
+1. **データを読む**（記録が3週間分以上あるとき）: analytics/site/data/<account>/posts.json と post_daily から、投稿後7日時点の「リーチ」「保存率」「シェア」「フォロー」を、話題（topic）・形式・リールの型・曜日ごとに比べ、伸びた傾向と伸びなかった傾向をメモ（gen/insights.md）。競合（competitors.json）の反応が多い投稿の話題も見る。3週間未満なら採点表中心で作る
+2. **次の週（来週の月〜日）の7本を作る**。日付ごとの形式は config の formats.reel_weekdays で決まる（その日がリールの日ならリール向けの台本・reel を必ず入れる）。各投稿に `"date": "YYYY-MM-DD"` を付ける（common.pick_post は date が今日の投稿を最優先で出す）。`category` も必ず付ける。話題・文例・例え・写真は既存の全投稿と重ねない。書き方は docs/production/CONTENT_SPEC.md
+   - 下書きはサブエージェント（model: sonnet）に、直しも sonnet、採点だけ opus
+3. **機械のチェック → 採点 → 直す**（最大4回）: `scripts/quality_check.py --render`（E・W 0件）、`scripts/assign_photos.py`（写真が足りなければ Pexels から集める）、全ページ・リールを描画して採点役に渡す。5点にならないものは予備の題材で作り直す
+4. **描画物を確認待ちに出す**: カルーセルは全ページの jpg、リールは mp4（声・BGM付き。BGM は非公開の genova-insta-assets の曲。無ければ自作の曲）を analytics/site/review/<account>/<週>/ に置き、review.json に7件を足す（id, date, format, reel_style, topic, title, caption, media_urls, quality_notes, revision: 1, status: pending）。`deadline` は今週の木曜 23:59（+09:00）。analytics に commit・push（Cloudflare が1〜2分で反映）
+5. **Google カレンダー**: 予定「インスタ投稿の確認（期限）」を木曜 23:00〜23:59 に作る。説明に「確認待ち ○本」「確認ページ https://insta-analytics-jvi.pages.dev/ の『確認待ち』」「期限を過ぎたら自動で採用されます」。通知は前日（水曜）19:00 ごろと当日 18:00。event id を state.json に保存
+6. **旅河さんに通知**（PushNotification、無ければ SendUserFile）: 「来週の投稿7本が確認待ちです。期限は木曜23:59。見なくても期限後に自動で採用されます」と、データから変えた点を1〜2行
+7. state.json に「作成済み・期限・各投稿の revision」を保存。log.md に記録
 
-## 4. 機械のチェック（無料・何度でも）
-- 下書きを既存の投稿の後ろにつないだ一時ファイルを作り、`python -X utf8 scripts/quality_check.py <一時ファイル> --render --config <repo>/config/clinic.json` を走らせる。新しい投稿の E（エラー）・W（注意）を0件にする
-- 写真: `python -X utf8 scripts/assign_photos.py <一時ファイル>` で1枚1回を割り当てる。足りない（終了コード1）ときは、ブラウザで Pexels（https://www.pexels.com/ja-jp/）の検索ページから集め、assets/photos と catalog.json に足す。写真の中の文字・ロゴ・顔を目で確かめ、だめなものは rejected に入れる
-- 直しはサブエージェント（model: sonnet）に、エラーの文だけを渡して任せる
+### C. 確認待ちの期間中（毎晩）
+- review_decisions.json に「直してほしい（fix）」があり、その revision の直しがまだ → コメントの内容で直す（必要なら再採点）→ 描画し直して差し替え、revision を1増やし status を pending に戻す → push。直した内容を通知で一言
+- 直してほしいの内容は、採点表 RUBRIC.md の末尾「新しい指摘」に日付つきで足す（同じことを二度言わせない）
+- 全部の投稿が approved（OK）になったら、期限を待たずに D へ
 
-## 5. 採点（別の目・5点満点）
-- 新しい投稿をすべて描画する（カルーセル全ページの一覧画像、リールは各型からコマを抜いた一覧画像）。手順は insta-quality-check の手順2と同じ
-- 採点役のサブエージェント（model: opus）に、**一覧画像・投稿の JSON・RUBRIC.md だけ**を渡す。作った理由や前回の点数は渡さない
-- 返してもらう形: 投稿ごと × 項目ごとの点数（1〜5）と、5点でない項目の具体的な直し方
-- RUBRIC.md の「全体を見る項目」（並び・単調さ・写真の重複など）も、既存の投稿とつないだ状態で採点させる
+### D. 期限を過ぎた（金曜の回）または全部 OK → 予定に入れる
+1. 採用する投稿: approved と、何も選ばれなかったもの。fix のものは直した版（直しが間に合わなければ、直す前の版のうち採点5点のもの）。rejected（使わない）は外し、予備の題材から作った投稿で埋める（その分は確認なしで採用）
+2. repo/content/generated.json に足す（date 付き）。`scripts/quality_check.py`（E・W 0件）を全体で通す
+3. repo に commit・push（日本語のコミット文、末尾に `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`）。毎日投稿のワークフローを dry_run で1回動かして成功を確かめる
+4. review.json の該当の投稿を status: scheduled にして analytics に push。カレンダーの予定を「確認済み（○本を予定に入れました）」に更新
+5. 旅河さんに通知: 入れた本数、使わないにした分の置き換え、直した点
 
-## 6. 直して、もう一度採点（最大4回）
-- 4点以下があった投稿だけ、直し役（sonnet）に「項目・点数・直し方」を渡して直す → 手順4の機械チェック → 手順5の採点
-- 4回直しても5点にならない投稿は捨て、予備の題材で作り直す（予備も尽きたら、その回は合格した分だけ足す）
-- 各回の点数を log.md に残す
+### E. 安全のための補充
+- stock.py で在庫が7日分を切っていたら、曜日に関係なく B を行う（確認期限は作った日の3日後の 23:59）
 
-## 7. 足す
-- 合格した投稿を repo/content/generated.json の末尾に足す（GENOVA の並び順は config の schedule.order = "sequence"。既存の後ろに並ぶ）
-- もう一度、全体で `quality_check.py`（E・W 0件）と `assign_photos.py` を通す
-- `approval` が "first" で、まだ一度も OK をもらっていない対象は、ここで止めて旅河さんに見本を送り、OK を待つ（log.md に「承認待ち」と書く）
-- それ以外は、repo にコミットして push（コミット文は日本語。末尾に `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`）。写真を足したときは assets/photos も含める。曲のファイル（mp3）は絶対に含めない
-- push のあと、GitHub Actions の毎日投稿ワークフローを「テスト実行（dry_run）」で1回起動し、成功を確かめる
-
-## 8. 旅河さんへの報告（日本語・短く）
-- PushNotification（使えないときは SendUserFile）で: 足した本数、採点の結果（全項目5点になった本数／捨てた本数）、使い切る日がいつに延びたか、見本の一覧画像1〜2枚
-- 失敗したとき（上限に当たった、写真が集まらない、push できない など）も、何ができて何が残ったかを正直に書く
+## 医院の対象（targets.json の approval が "first"）
+- 初回は期限で自動採用しない。旅河さんの OK を待つ（state.json に「初回承認待ち」）。2回目からは上と同じ
+- カルテ（docs/karte_schema.md）・医院カルテ（clinic_profile.md）の範囲で作る。医療広告ガイドラインは `anthropic-skills:medical-advertising-compliance` で確認
 
 ## 新しい指摘を受けたら
-旅河さんから新しい指摘があったら、RUBRIC.md に項目を足す（日付と言葉を残す）。機械で判定できるものは scripts/quality_check.py にもチェックを足す。
+旅河さんから新しい指摘があったら RUBRIC.md に項目を足す（日付と言葉を残す）。機械で判定できるものは scripts/quality_check.py にもチェックを足す。

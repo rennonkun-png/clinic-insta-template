@@ -3,8 +3,10 @@
     "name": "genova",
     "repo": "rennonkun-png/clinic-insta-own",
     "content_key": "webmarketing",
-    "threshold": 14,
-    "batch": 30,
+    "analytics_repo": "rennonkun-png/insta-analytics",
+    "analytics_account": "genova",
+    "posts_per_week": 7,
+    "review_deadline": "木曜 23:59",
     "approval": "auto",
     "karte": null
   }
