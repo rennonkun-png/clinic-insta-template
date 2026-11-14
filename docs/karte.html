@@ -110,10 +110,33 @@ dl.rv{margin:0}
 pre.json{background:#fff;border:1.5px solid var(--line);border-radius:6px;padding:14px;font-family:ui-monospace,Consolas,monospace;font-size:13.5px;line-height:1.6;max-height:360px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin:12px 0}
 .msg{font-size:15px;color:var(--accent);font-weight:700;min-height:1.5em;margin:8px 0 0}
 .hidden{display:none !important}
+
+/* 写真 */
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0)}
+.drop{border:2px dashed #B9B2A1;border-radius:6px;background:#fff;padding:22px 16px;text-align:center;margin:16px 0 4px;transition:border-color .12s,background .12s}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop p{margin:0 0 12px}
+.drop .hint{display:block;margin-top:4px}
+.plist{list-style:none;margin:12px 0;padding:0;display:grid;gap:12px}
+.pc{display:grid;grid-template-columns:120px 1fr;gap:14px;background:#fff;border:1.5px solid var(--line);border-radius:6px;padding:12px}
+.pc img{width:120px;height:120px;object-fit:cover;border-radius:4px;background:#EEE9DD;display:block}
+.pc .ctl{display:grid;gap:6px;min-width:0;align-content:start}
+.pc .pc-h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pc .sl{font-size:14px;font-weight:700;color:var(--muted);margin-top:2px}
+.pc select,.pc input[type=text]{width:100%;font:inherit;font-size:16px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:6px;padding:8px 10px;min-height:44px}
+.pc select:focus,.pc input[type=text]:focus{border-color:var(--accent);outline:3px solid rgba(47,111,214,.35);outline-offset:1px}
+.pc .pdel{min-height:40px;padding:4px 14px;font:inherit;font-size:15px;font-weight:700;color:var(--danger);background:#fff;border:1.5px solid #E2BDB6;border-radius:6px;cursor:pointer}
+.pc .ck{display:flex;gap:8px;align-items:flex-start;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px}
+.pc .ck input{width:22px;height:22px;margin:3px 0 0;flex:0 0 auto;accent-color:var(--accent)}
+.pwarn{font-size:14px;color:var(--danger);margin:2px 0 0}
+.thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.thumbs img{width:52px;height:52px;object-fit:cover;border-radius:3px;border:1px solid var(--line)}
 @media (max-width:420px){
   h1{font-size:23px} h2.q{font-size:21px}
   .card{padding:18px 16px}
   .opts.days{grid-template-columns:repeat(4,1fr)}
+  .pc{grid-template-columns:84px 1fr;gap:10px;padding:10px}
+  .pc img{width:84px;height:84px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none !important}}
 </style>
@@ -194,14 +217,18 @@ var Q = [
    title:'顔や写真を使うことについて、先生から書面で同意をもらっていますか？',
    help:'同意書をいただくまでは、写真やイラストは使いません。',
    options:[o('received','もらった','同意書があり、すぐに使えます'),o('pending','これからもらう','同意書がそろってから使い始めます')]},
-  {key:'person_photos', cat:'人物', type:'single', rec:'use_hp',
+  {key:'person_photos', cat:'人物', type:'single', rec:'upload',
    showIf:function(a){return a.person_mode==='photo_cutout'||a.person_mode==='photo_illust';},
    title:'先生の写真はどれを使いますか？',
-   options:[o('use_hp','ホームページに載っている写真','使ってよいか、念のため医院に確認します'),o('send_new','新しく撮って送ってもらう','スマホで撮った写真でかまいません'),o('later','あとで決める','写真を使わない投稿から始めます')]},
+   options:[o('upload','手元の写真を入れる（この画面で）','写真データをお持ちなら、いちばん確実です'),o('use_hp','ホームページに載っている写真','使ってよいか、念のため医院に確認します'),o('send_new','新しく撮って送ってもらう','スマホで撮った写真でかまいません'),o('later','あとで決める','写真を使わない投稿から始めます')],
+   noteIf:function(a){ return a.person_photos==='upload' ? 'このあとの「写真」の質問で、先生の写真を入れてください（種類は「先生」を選びます）。' : ''; }},
   {key:'illust_style', cat:'人物', type:'single', rec:'soft',
    showIf:function(a){return a.person_mode==='photo_illust'||a.person_mode==='fictional_illust';},
    title:'イラストの絵のタッチは？',
    options:[o('soft','やわらかい手描き風','あたたかく、親しみやすい'),o('line','すっきりした線の絵','シンプルで、清潔な印象'),o('watercolor','水彩風','やさしく、落ち着いた印象')]},
+  {key:'photos', cat:'写真', type:'photos',
+   title:'医院の写真をまとめて入れる',
+   help:'先生・スタッフ・院内・設備・外観・ロゴなど、お持ちの写真をまとめて入れられます。写真がなくても先へ進めます。'},
   {key:'voice', cat:'動画', type:'single', rec:'ai_voice',
    title:'動画（リール）に読み上げの声を入れますか？',
    options:[o('ai_voice','AIの声で読み上げる','画面に「AI音声」と表示します'),o('none','声なし','文字と音楽だけで作ります')]},
@@ -262,6 +289,167 @@ function load(){
 }
 function clearStore(){ try{ localStorage.removeItem(STORE_KEY); }catch(e){} }
 
+/* ===== 写真（画像本体は IndexedDB に保存） ===== */
+var KINDS = [['doctor','先生'],['staff','スタッフ'],['interior','院内（待合・診療室）'],['equipment','設備・機器'],['exterior','外観・看板'],['logo','ロゴ'],['other','その他']];
+var PERSON_KINDS = ['doctor','staff'];
+var MAX_PHOTOS = 40;
+var P = {list:[], dbOk:true, busy:false, thumbs:{}};
+var PDB = {name:'clinic_karte_photos_v1', store:'photos', db:null};
+
+function kindLabel(k){ for (var i=0;i<KINDS.length;i++) if (KINDS[i][0]===k) return KINDS[i][1]; return '未選択'; }
+function idbOpen(){
+  return new Promise(function(res, rej){
+    try{
+      if (!window.indexedDB){ rej(new Error('no idb')); return; }
+      var r = indexedDB.open(PDB.name, 1);
+      r.onupgradeneeded = function(){ if (!r.result.objectStoreNames.contains(PDB.store)) r.result.createObjectStore(PDB.store, {keyPath:'id'}); };
+      r.onsuccess = function(){ res(r.result); };
+      r.onerror = function(){ rej(r.error); };
+      r.onblocked = function(){ rej(new Error('blocked')); };
+    }catch(e){ rej(e); }
+  });
+}
+function idbDo(mode, fn){
+  if (!P.dbOk || !PDB.db) return Promise.resolve(null);
+  return new Promise(function(res, rej){
+    try{
+      var tx = PDB.db.transaction(PDB.store, mode);
+      var st = tx.objectStore(PDB.store);
+      var out = fn(st);
+      tx.oncomplete = function(){ res(out && 'result' in out ? out.result : null); };
+      tx.onerror = tx.onabort = function(){ rej(tx.error); };
+    }catch(e){ rej(e); }
+  }).catch(function(){ photoDbFailed(); return null; });
+}
+function photoDbFailed(){
+  if (!P.dbOk) return;
+  P.dbOk = false;
+  if (S.screen==='q' && S.cur==='photos'){ var el=document.getElementById('pdbNote'); if (el) el.classList.remove('hidden'); }
+}
+function photoRecord(p){ return {id:p.id, order:p.order, kind:p.kind, memo:p.memo, consent:p.consent, mime:p.mime, blob:p.blob, alt:p.alt||null}; }
+function photoPut(p){ return idbDo('readwrite', function(st){ st.put(photoRecord(p)); }); }
+function photoPutAll(){ return idbDo('readwrite', function(st){ P.list.forEach(function(p, i){ p.order=i; st.put(photoRecord(p)); }); }); }
+function photoDel(id){ return idbDo('readwrite', function(st){ st.delete(id); }); }
+function photoClearAll(){
+  Object.keys(P.thumbs).forEach(function(k){ try{ URL.revokeObjectURL(P.thumbs[k]); }catch(e){} });
+  P.thumbs = {}; P.list = [];
+  return idbDo('readwrite', function(st){ st.clear(); });
+}
+function photoInit(){
+  return idbOpen().then(function(db){
+    PDB.db = db;
+    return idbDo('readonly', function(st){ return st.getAll(); });
+  }).then(function(rows){
+    P.list = (rows||[]).filter(function(r){ return r && r.blob; }).sort(function(a,b){ return (a.order||0)-(b.order||0); });
+  }).catch(function(){ P.dbOk = false; });
+}
+function thumbUrl(p){
+  if (!P.thumbs[p.id]){ try{ P.thumbs[p.id] = URL.createObjectURL(p.blob); }catch(e){ return ''; } }
+  return P.thumbs[p.id];
+}
+
+/* 画像をブラウザの中で縮める。写真は長辺1600pxの JPEG、PNG は透過を残すため長辺1000pxの PNG も作っておく（ロゴ用） */
+function isHeic(f){ return /hei[cf]/i.test(f.type||'') || /\.hei[cf]$/i.test(f.name||''); }
+function loadImage(file){
+  return new Promise(function(res, rej){
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function(){ res({img:img, url:url}); };
+    img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error('decode')); };
+    img.src = url;
+  });
+}
+function drawTo(img, maxSide, type, quality, white){
+  return new Promise(function(res, rej){
+    var w = img.naturalWidth, h = img.naturalHeight;
+    if (!w || !h){ rej(new Error('size')); return; }
+    var s = Math.min(1, maxSide / Math.max(w, h));
+    var cw = Math.max(1, Math.round(w*s)), ch = Math.max(1, Math.round(h*s));
+    var c = document.createElement('canvas'); c.width = cw; c.height = ch;
+    var ctx = c.getContext('2d');
+    if (white){ ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, cw, ch); }
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, cw, ch);
+    c.toBlob(function(b){ b ? res(b) : rej(new Error('encode')); }, type, quality);
+  });
+}
+function processFile(file){
+  return loadImage(file).then(function(r){
+    var isPng = /png/i.test(file.type||'') || /\.png$/i.test(file.name||'');
+    return drawTo(r.img, 1600, 'image/jpeg', 0.85, true).then(function(jpg){
+      if (!isPng) return {blob:jpg, alt:null};
+      return drawTo(r.img, 1000, 'image/png', undefined, false).then(function(png){ return {blob:jpg, alt:png}; }, function(){ return {blob:jpg, alt:null}; });
+    }).then(function(x){ URL.revokeObjectURL(r.url); return x; }, function(e){ URL.revokeObjectURL(r.url); throw e; });
+  });
+}
+function newPhotoId(){ return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+/* 出力するときのファイル名（01_doctor.jpg など）。ロゴで PNG があれば PNG を使う */
+function photoOut(p, i){
+  var png = p.kind==='logo' && p.alt;
+  return {file:'photos/' + ('0'+(i+1)).slice(-2) + '_' + (p.kind||'other') + (png?'.png':'.jpg'), blob: png ? p.alt : p.blob};
+}
+function photoJsonList(){
+  return P.list.map(function(p, i){
+    return {file:photoOut(p, i).file, kind:p.kind||'other', memo:(p.memo||'').trim(), consent: PERSON_KINDS.indexOf(p.kind)>=0 ? !!p.consent : null};
+  });
+}
+function photoSummary(){
+  if (!P.list.length) return '';
+  var cnt = {}; P.list.forEach(function(p){ var k=p.kind||''; cnt[k]=(cnt[k]||0)+1; });
+  var parts = KINDS.filter(function(k){ return cnt[k[0]]; }).map(function(k){ return k[1].replace(/（.*）/,'') + cnt[k[0]]; });
+  if (cnt['']) parts.push('種類が未選択' + cnt['']);
+  return P.list.length + '枚（' + parts.join('・') + '）';
+}
+function photoWarnings(){
+  var w = [];
+  var noCons = [];
+  P.list.forEach(function(p, i){ if (PERSON_KINDS.indexOf(p.kind)>=0 && !p.consent) noCons.push((i+1) + '枚目（' + kindLabel(p.kind) + '）'); });
+  if (noCons.length) w.push('「本人の同意あり」のチェックがない写真があります：' + noCons.join('、') + '。同意が確認できるまで、この写真は投稿に使いません。');
+  if (isVisible('person_photos') && S.answers.person_photos==='upload' && !P.list.some(function(p){ return p.kind==='doctor'; }))
+    w.push('「先生の写真」で「手元の写真を入れる」を選びましたが、種類が「先生」の写真がまだありません。「写真」の「直す」から先生の写真を入れてください。');
+  return w;
+}
+
+/* ===== ZIP（無圧縮）を自前で組み立てる ===== */
+var CRC_T = (function(){ var t = new Uint32Array(256); for (var n=0;n<256;n++){ var c=n; for (var k=0;k<8;k++) c = (c&1) ? (0xEDB88320 ^ (c>>>1)) : (c>>>1); t[n]=c>>>0; } return t; })();
+function crc32(u8){ var c = 0xFFFFFFFF; for (var i=0;i<u8.length;i++) c = CRC_T[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function blobBytes(b){
+  if (b.arrayBuffer) return b.arrayBuffer().then(function(ab){ return new Uint8Array(ab); });
+  return new Promise(function(res, rej){ var fr = new FileReader(); fr.onload=function(){ res(new Uint8Array(fr.result)); }; fr.onerror=function(){ rej(fr.error); }; fr.readAsArrayBuffer(b); });
+}
+function makeZip(entries){ /* entries: [{name, data:Uint8Array}] */
+  var enc = new TextEncoder(), parts = [], central = [], offset = 0, cdSize = 0, d = new Date();
+  var dosTime = (d.getHours()<<11) | (d.getMinutes()<<5) | (d.getSeconds()>>1);
+  var dosDate = ((d.getFullYear()-1980)<<9) | ((d.getMonth()+1)<<5) | d.getDate();
+  entries.forEach(function(e){
+    var nm = enc.encode(e.name), crc = crc32(e.data), sz = e.data.length;
+    var lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, dosTime, true); lh.setUint16(12, dosDate, true); lh.setUint32(14, crc, true);
+    lh.setUint32(18, sz, true); lh.setUint32(22, sz, true); lh.setUint16(26, nm.length, true); lh.setUint16(28, 0, true);
+    parts.push(lh.buffer, nm, e.data);
+    var ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+    ch.setUint16(12, dosTime, true); ch.setUint16(14, dosDate, true); ch.setUint32(16, crc, true);
+    ch.setUint32(20, sz, true); ch.setUint32(24, sz, true); ch.setUint16(28, nm.length, true);
+    ch.setUint16(30, 0, true); ch.setUint16(32, 0, true); ch.setUint16(34, 0, true); ch.setUint16(36, 0, true); ch.setUint32(38, 0, true);
+    ch.setUint32(42, offset, true);
+    central.push(ch.buffer, nm);
+    offset += 30 + nm.length + sz; cdSize += 46 + nm.length;
+  });
+  var eo = new DataView(new ArrayBuffer(22));
+  eo.setUint32(0, 0x06054b50, true); eo.setUint16(4, 0, true); eo.setUint16(6, 0, true);
+  eo.setUint16(8, entries.length, true); eo.setUint16(10, entries.length, true);
+  eo.setUint32(12, cdSize, true); eo.setUint32(16, offset, true); eo.setUint16(20, 0, true);
+  return new Blob(parts.concat(central, [eo.buffer]), {type:'application/zip'});
+}
+function downloadBlob(blob, fname){
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+}
+
 var app = document.getElementById('app');
 var nav = document.getElementById('nav');
 var btnBack = document.getElementById('btnBack');
@@ -272,9 +460,9 @@ function renderStart(){
   nav.classList.add('hidden');
   var saved = load();
   var resumeHtml = '';
-  if (saved && saved.answers && Object.keys(saved.answers).length){
-    var name = saved.answers.clinic_name ? esc(saved.answers.clinic_name) : '（医院名は未入力）';
-    resumeHtml = '<div class="card" id="resumeCard"><h3>入力の途中があります</h3><p>' + name + ' の入力が残っています。続きから再開できます。</p>'
+  if ((saved && saved.answers && Object.keys(saved.answers).length) || P.list.length){
+    var name = (saved && saved.answers && saved.answers.clinic_name) ? esc(saved.answers.clinic_name) : '（医院名は未入力）';
+    resumeHtml = '<div class="card" id="resumeCard"><h3>入力の途中があります</h3><p>' + name + ' の入力' + (P.list.length ? '（写真 ' + P.list.length + '枚）' : '') + 'が残っています。続きから再開できます。</p>'
       + '<div class="row"><button type="button" class="btn" id="btnResume">続きから再開する</button><button type="button" class="btn sub" id="btnDiscard">消して最初から</button></div></div>';
   }
   app.innerHTML =
@@ -292,6 +480,7 @@ function renderStart(){
   focusH();
   if (resumeHtml){
     document.getElementById('btnResume').onclick = function(){
+      saved = saved || {};
       S.answers = saved.answers||{}; S.unsure = saved.unsure||{}; S.hp_url = saved.hp_url||'';
       if (saved.screen==='review'){ go('review'); return; }
       S.cur = (saved.cur && QMAP[saved.cur]) ? saved.cur : Q[0].key;
@@ -300,7 +489,8 @@ function renderStart(){
     };
     document.getElementById('btnDiscard').onclick = function(){
       if (!window.confirm('入力の途中の内容を消して、最初から始めますか？')) return;
-      clearStore(); S.answers={}; S.unsure={}; S.hp_url=''; renderStart();
+      clearStore(); S.answers={}; S.unsure={}; S.hp_url='';
+      photoClearAll().then(renderStart, renderStart);
     };
   }
   document.getElementById('btnStart').onclick = function(){
@@ -314,6 +504,7 @@ function renderStart(){
     }
     S.hp_url = url || S.answers.hp_url || '';
     delete S.answers.hp_url;
+    if (P.list.length) photoClearAll();
     S.cur = Q[0].key; go('q');
   };
 }
@@ -336,7 +527,7 @@ function applyDraft(txt){
       else S.answers[k] = String(v);
       n++; return;
     }
-    if (!q) return;
+    if (!q || q.type==='photos') return;
     if (q.type==='single'){ var c = toCode(q, v); if (c){ S.answers[k]=c; n++; } }
     else if (q.type==='multi'){ var arr = (Array.isArray(v)?v:String(v).split(/[、,\s]+/)).map(function(x){return toCode(q,x);}).filter(Boolean); if (arr.length){ S.answers[k]=arr; n++; } }
     else if (q.type==='days'){ S.answers[k]=toDays(v); n++; }
@@ -417,9 +608,11 @@ function renderQ(){
     h += '<div style="margin-top:16px"><label class="fl" for="inp">入力してください</label><textarea id="inp" placeholder="' + esc(q.placeholder||'') + '">' + esc(a||'') + '</textarea></div>';
   } else if (q.type==='confirm'){
     h += '<fieldset class="opts"><legend>' + esc(q.title) + '</legend>' + optHtml(q, {v:'yes', label:q.confirmLabel}, 'checkbox', 'ans', a===true, false) + '</fieldset>';
+  } else if (q.type==='photos'){
+    h += photoQHtml();
   }
   h += '<p class="err" id="err" role="alert"></p>';
-  h += '<p class="saved">入力した内容は、このブラウザに自動で保存されます。</p>';
+  h += '<p class="saved">' + (q.type==='photos' ? (P.dbOk ? '入れた写真も、このブラウザに自動で保存されます。' : '答えはこのブラウザに保存されますが、写真は保存されません。') : '入力した内容は、このブラウザに自動で保存されます。') + '</p>';
   app.innerHTML = h;
   nav.classList.remove('hidden');
   btnBack.textContent = '戻る';
@@ -431,6 +624,7 @@ function renderQ(){
 }
 
 function wireQ(q){
+  if (q.type==='photos'){ wirePhotos(); return; }
   var inputs = app.querySelectorAll('input[name=ans]');
   var unsEl = app.querySelector('input[value=__unsure]');
   function onChange(){ readQ(q); save(); renderSub(q); renderNote(q); document.getElementById('err').textContent=''; }
@@ -456,6 +650,7 @@ function tagInfo(){
 }
 function readQ(q){
   var k = q.key;
+  if (q.type==='photos') return;
   if (q.type==='single'){
     var el = app.querySelector('input[name=ans]:checked');
     if (!el){ delete S.answers[k]; delete S.unsure[k]; return; }
@@ -511,8 +706,147 @@ function renderNote(q){
   area.innerHTML = t ? '<div class="note">' + esc(t) + '</div>' : '';
 }
 
+/* ===== 写真の質問画面 ===== */
+function photoQHtml(){
+  var h = '<div class="note"><b>写真を入れるときの注意</b><br>患者さんが写っている写真は入れないでください。<br>顔が写る写真は本人の同意が必要です。</div>';
+  if (isVisible('person_photos') && S.answers.person_photos==='upload')
+    h += '<p class="hint">「先生の写真」で「手元の写真を入れる」を選んでいます。先生の写真を1枚以上入れて、種類で「先生」を選んでください。</p>';
+  h += '<div class="note' + (P.dbOk ? ' hidden' : '') + '" id="pdbNote" role="status">このブラウザでは写真を保存できません。この画面を閉じると写真は消えます。最後まで入力して、ZIPで保存してください。</div>';
+  h += '<div class="drop" id="drop"><p>ここに写真をドラッグして入れるか、<br>ボタンから選んでください。<span class="hint">JPG・PNG・WebP に対応。何枚でもまとめて選べます。</span></p>'
+    + '<button type="button" class="btn sub" id="btnPick">写真を選ぶ</button>'
+    + '<input type="file" id="fileIn" class="vh" tabindex="-1" aria-hidden="true" multiple accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif"></div>';
+  h += '<p class="msg" id="pmsg" role="status"></p><p class="err" id="perr" role="alert"></p>';
+  h += '<p class="hint" id="pcount"></p><ul class="plist" id="plist" aria-label="入れた写真"></ul>';
+  return h;
+}
+function kindOptions(sel){
+  return '<option value=""' + (sel?'':' selected') + '>選んでください</option>' + KINDS.map(function(k){ return '<option value="' + k[0] + '"' + (sel===k[0]?' selected':'') + '>' + esc(k[1]) + '</option>'; }).join('');
+}
+function photoCardHtml(p, i){
+  var n = i+1, isP = PERSON_KINDS.indexOf(p.kind)>=0;
+  return '<li class="pc" data-id="' + esc(p.id) + '"><img src="' + thumbUrl(p) + '" alt="' + n + '枚目の写真"><div class="ctl">'
+    + '<div class="pc-h"><b>' + n + '枚目</b><button type="button" class="pdel" data-act="del" aria-label="' + n + '枚目の写真を削除">削除</button></div>'
+    + '<label class="sl" for="k_' + esc(p.id) + '">種類</label><select id="k_' + esc(p.id) + '" data-act="kind">' + kindOptions(p.kind) + '</select>'
+    + '<div data-cons' + (isP?'':' class="hidden"') + '><label class="ck"><input type="checkbox" data-act="consent"' + (p.consent?' checked':'') + '><span>本人の同意あり</span></label>'
+    + '<p class="pwarn' + (p.consent?' hidden':'') + '">同意が確認できない写真は、投稿に使いません。</p></div>'
+    + '<label class="sl" for="m_' + esc(p.id) + '">ひとことメモ（任意）</label><input type="text" id="m_' + esc(p.id) + '" data-act="memo" maxlength="100" placeholder="例：受付の様子" value="' + esc(p.memo||'') + '">'
+    + '</div></li>';
+}
+function renderPhotoList(){
+  var ul = document.getElementById('plist'); if (!ul) return;
+  ul.innerHTML = P.list.map(photoCardHtml).join('');
+  updatePhotoCount();
+}
+function updatePhotoCount(){
+  var el = document.getElementById('pcount');
+  if (el) el.textContent = P.list.length ? ('入れた写真：' + photoSummary()) : 'まだ写真は入っていません。写真がなくても先へ進めます。';
+  if (S.screen==='q' && S.cur==='photos' && !S.fromReview){
+    var vis = visible(), last = vis.length && vis[vis.length-1].key==='photos';
+    btnNext.textContent = last ? '確認画面へ' : (P.list.length ? '進む' : '写真なしで進む');
+  }
+}
+function findPhoto(id){ for (var i=0;i<P.list.length;i++) if (P.list[i].id===id) return P.list[i]; return null; }
+function addFiles(files){
+  var arr = Array.prototype.slice.call(files||[]);
+  if (!arr.length) return;
+  var msg = document.getElementById('pmsg'), perr = document.getElementById('perr');
+  if (P.busy){ if (perr) perr.textContent = 'いま写真を読み込んでいます。終わってから、もう一度入れてください。'; return; }
+  var fails = [], added = 0, skipped = 0;
+  var room = MAX_PHOTOS - P.list.length;
+  if (arr.length > room){ skipped = arr.length - Math.max(room, 0); arr = arr.slice(0, Math.max(room, 0)); }
+  if (perr) perr.textContent = '';
+  P.busy = true;
+  var i = 0;
+  function step(){
+    if (i >= arr.length){
+      P.busy = false;
+      var m = document.getElementById('pmsg');
+      if (m) m.textContent = added ? (added + '枚入れました。1枚ずつ「種類」を選んでください。') : '';
+      var e = document.getElementById('perr');
+      var t = [];
+      if (fails.length) t.push('読み込めなかったファイル：' + fails.join('、'));
+      if (skipped) t.push('写真は' + MAX_PHOTOS + '枚までです。' + skipped + '枚は入れませんでした。');
+      if (e) e.textContent = t.join(' ');
+      return;
+    }
+    var f = arr[i++];
+    var m2 = document.getElementById('pmsg'); if (m2) m2.textContent = '読み込み中… ' + i + ' / ' + arr.length;
+    var okType = /^image\//i.test(f.type||'') || /\.(jpe?g|png|webp|hei[cf])$/i.test(f.name||'');
+    if (!okType){ fails.push(f.name + '（画像ではありません）'); step(); return; }
+    processFile(f).then(function(r){
+      var p = {id:newPhotoId(), order:P.list.length, kind:'', memo:'', consent:false, mime:'image/jpeg', blob:r.blob, alt:r.alt};
+      P.list.push(p); added++;
+      photoPut(p);
+      var ul = document.getElementById('plist');
+      if (ul) ul.insertAdjacentHTML('beforeend', photoCardHtml(p, P.list.length-1));
+      updatePhotoCount();
+    }, function(){
+      fails.push(f.name + (isHeic(f) ? '（HEIC形式はこのブラウザでは読めません。JPGかPNGで入れてください）' : '（画像を読めませんでした。JPGかPNGで入れてください）'));
+    }).then(step);
+  }
+  step();
+}
+var memoTimers = {};
+function wirePhotos(){
+  var drop = document.getElementById('drop'), fin = document.getElementById('fileIn'), ul = document.getElementById('plist');
+  document.getElementById('btnPick').onclick = function(){ fin.click(); };
+  fin.addEventListener('change', function(){ var fs = fin.files; addFiles(fs); fin.value = ''; });
+  var depth = 0;
+  drop.addEventListener('dragenter', function(e){ if (hasFiles(e)){ depth++; drop.classList.add('over'); } });
+  drop.addEventListener('dragleave', function(){ depth = Math.max(0, depth-1); if (!depth) drop.classList.remove('over'); });
+  drop.addEventListener('drop', function(){ depth = 0; drop.classList.remove('over'); });
+  ul.addEventListener('change', function(e){
+    var li = e.target.closest('li.pc'); if (!li) return;
+    var p = findPhoto(li.getAttribute('data-id')); if (!p) return;
+    var act = e.target.getAttribute('data-act');
+    if (act==='kind'){
+      p.kind = e.target.value;
+      li.querySelector('[data-cons]').classList.toggle('hidden', PERSON_KINDS.indexOf(p.kind)<0);
+      document.getElementById('err').textContent = '';
+    } else if (act==='consent'){
+      p.consent = e.target.checked;
+      li.querySelector('.pwarn').classList.toggle('hidden', p.consent);
+    } else return;
+    photoPut(p); updatePhotoCount();
+  });
+  ul.addEventListener('input', function(e){
+    if (e.target.getAttribute('data-act')!=='memo') return;
+    var li = e.target.closest('li.pc'); var p = li && findPhoto(li.getAttribute('data-id')); if (!p) return;
+    p.memo = e.target.value;
+    clearTimeout(memoTimers[p.id]); memoTimers[p.id] = setTimeout(function(){ photoPut(p); }, 300);
+  });
+  ul.addEventListener('click', function(e){
+    var b = e.target.closest('[data-act=del]'); if (!b) return;
+    var li = b.closest('li.pc'); var id = li.getAttribute('data-id');
+    var idx = -1; P.list.forEach(function(p, i){ if (p.id===id) idx = i; });
+    if (idx<0) return;
+    P.list.splice(idx, 1);
+    if (P.thumbs[id]){ try{ URL.revokeObjectURL(P.thumbs[id]); }catch(err){} delete P.thumbs[id]; }
+    photoDel(id); photoPutAll();
+    renderPhotoList();
+    var m = document.getElementById('pmsg'); if (m) m.textContent = (idx+1) + '枚目の写真を削除しました。';
+    var dels = ul.querySelectorAll('[data-act=del]');
+    var tgt = dels[Math.min(idx, dels.length-1)] || document.getElementById('btnPick');
+    tgt.focus();
+  });
+  renderPhotoList();
+}
+function hasFiles(e){ var t = e.dataTransfer && e.dataTransfer.types; return !!t && Array.prototype.indexOf.call(t, 'Files') >= 0; }
+/* 写真の画面では、どこに落としても追加。ほかの画面では、ブラウザが画像を開いてしまうのを防ぐだけ */
+window.addEventListener('dragover', function(e){ if (hasFiles(e)){ e.preventDefault(); e.dataTransfer.dropEffect = (S.screen==='q' && S.cur==='photos') ? 'copy' : 'none'; } });
+window.addEventListener('drop', function(e){
+  if (!hasFiles(e)) return;
+  e.preventDefault();
+  if (S.screen==='q' && S.cur==='photos') addFiles(e.dataTransfer.files);
+});
+
 function validate(q){
   var a = S.answers[q.key];
+  if (q.type==='photos'){
+    if (P.busy) return 'まだ写真を読み込んでいます。少しお待ちください。';
+    var nk = []; P.list.forEach(function(p, i){ if (!p.kind) nk.push((i+1) + '枚目'); });
+    return nk.length ? '種類が選ばれていない写真があります（' + nk.join('、') + '）。種類を選んでください。' : '';
+  }
   if (q.type==='text' && q.required && !(a||'').trim()) return '入力してください。';
   if (q.type==='single' && !a && !S.unsure[q.key]) return 'どれか1つを選んでください。迷ったら「わからない」を選べます。';
   if (q.type==='confirm' && a!==true) return 'この表示は必須です。確認のチェックを入れてください。';
@@ -570,26 +904,29 @@ function display(q){
   if (q.type==='days') return daysLabel(a);
   if (q.type==='tags') return (a||[]).map(function(t){return '#'+t;}).join(' ');
   if (q.type==='confirm') return a===true ? '確認済み' : '';
+  if (q.type==='photos') return P.list.length ? photoSummary() : 'なし';
   return (a||'').trim();
 }
 function daysLabel(a){ return (a||[]).map(function(v){ for (var i=0;i<DAYS.length;i++) if (DAYS[i][0]===v) return DAYS[i][1]; return v; }).join('・'); }
 function shortTitle(q){
-  var m = {clinic_name:'医院名',specialties:'診療科',area:'地域',director_name:'院長名',closed_days:'休診日',audience:'見てほしい人',recruit_roles:'募集している職種',focus_treatments:'力を入れたい診療',not_offered:'行っていない診療',disclose:'出してよい情報',design_color:'医院の色',design_mood:'雰囲気',person_mode:'人物の出し方',person_consent:'顔・写真の同意書',person_photos:'使う写真',illust_style:'イラストのタッチ',voice:'読み上げの声',voice_style:'先生が話す形',bgm:'音楽（BGM）',post_days:'投稿する曜日',reel_ratio:'動画の本数',content_mix:'中身の割合',cta:'最後にすすめること',hashtags:'固定のハッシュタグ',ai_disclosure:'「AI作成」の表示',notes:'そのほかのメモ'};
+  var m = {clinic_name:'医院名',specialties:'診療科',area:'地域',director_name:'院長名',closed_days:'休診日',audience:'見てほしい人',recruit_roles:'募集している職種',focus_treatments:'力を入れたい診療',not_offered:'行っていない診療',disclose:'出してよい情報',design_color:'医院の色',design_mood:'雰囲気',person_mode:'人物の出し方',person_consent:'顔・写真の同意書',person_photos:'使う写真',illust_style:'イラストのタッチ',voice:'読み上げの声',voice_style:'先生が話す形',bgm:'音楽（BGM）',post_days:'投稿する曜日',reel_ratio:'動画の本数',content_mix:'中身の割合',cta:'最後にすすめること',hashtags:'固定のハッシュタグ',ai_disclosure:'「AI作成」の表示',notes:'そのほかのメモ',photos:'医院の写真'};
   return m[q.key] || q.title;
 }
 function renderReview(){
   var vis = visible();
-  var missing = vis.filter(function(q){ return needsAnswer(q) && validate(q); });
+  var missing = vis.filter(function(q){ return (needsAnswer(q) || q.type==='photos') && validate(q); });
   var h = '<h1 tabindex="-1" id="h">内容を確認してください</h1>'
     + '<p class="lead">直したい項目は「直す」を押すと、その質問に戻れます。</p>';
-  if (missing.length) h += '<div class="note" role="alert">まだ答えていない質問があります：' + missing.map(function(q){return esc(shortTitle(q));}).join('、') + '</div>';
+  if (missing.length) h += '<div class="note" role="alert">まだ答えていない質問があります：' + missing.map(function(q){return esc(shortTitle(q)) + (q.type==='photos' ? '（種類が選ばれていない写真）' : '');}).join('、') + '</div>';
+  photoWarnings().forEach(function(w){ h += '<div class="note">' + esc(w) + '</div>'; });
   h += '<div class="card" style="padding-top:6px"><dl class="rv">';
   h += '<div class="it"><dt>ホームページ</dt><dd>' + (S.hp_url ? esc(S.hp_url) : '<span class="empty">未入力</span>') + '</dd><button type="button" class="btn sub fix" data-go="__start" aria-label="ホームページを直す">直す</button></div>';
   var lastCat = '';
   vis.forEach(function(q){
     if (q.cat!==lastCat){ h += '</dl><p class="rv-h">' + esc(q.cat) + '</p><dl class="rv">'; lastCat=q.cat; }
     var d = display(q);
-    h += '<div class="it"><dt>' + esc(shortTitle(q)) + (S.unsure[q.key]?'<span class="uns">わからない→' + (q.rec?'おすすめ':'あとで確認') + '</span>':'') + '</dt><dd>' + (d ? esc(d) : '<span class="empty">' + (S.unsure[q.key] ? 'あとで確認' : '未入力') + '</span>') + '</dd>'
+    var extra = (q.type==='photos' && P.list.length) ? '<span class="thumbs">' + P.list.map(function(p, i){ return '<img src="' + thumbUrl(p) + '" alt="' + (i+1) + '枚目：' + esc(kindLabel(p.kind)) + '">'; }).join('') + '</span>' : '';
+    h += '<div class="it"><dt>' + esc(shortTitle(q)) + (S.unsure[q.key]?'<span class="uns">わからない→' + (q.rec?'おすすめ':'あとで確認') + '</span>':'') + '</dt><dd>' + (d ? esc(d) : '<span class="empty">' + (S.unsure[q.key] ? 'あとで確認' : '未入力') + '</span>') + extra + '</dd>'
       + '<button type="button" class="btn sub fix" data-go="' + q.key + '" aria-label="' + esc(shortTitle(q)) + 'を直す">直す</button></div>';
   });
   h += '</dl></div>';
@@ -621,6 +958,7 @@ function buildJson(){
     else if (q.type==='text' || q.type==='textarea') v = (a||'').trim() || null;
     else if (q.type==='multi' || q.type==='days' || q.type==='tags') v = Array.isArray(a) ? a.slice() : [];
     else if (q.type==='confirm') v = a===true;
+    else if (q.type==='photos') v = photoJsonList();
     else v = a || null;
     if (q.key==='focus_treatments' && v) v = v.split(/\n+/).map(function(s){return s.trim();}).filter(Boolean);
     if (q.key==='recruit_roles' && v) v = v.split(/[、,，]+/).map(function(s){return s.trim();}).filter(Boolean);
@@ -639,15 +977,39 @@ function renderResult(){
   var name = (S.answers.clinic_name||'clinic').replace(/[\\\/:*?"<>|\s]+/g,'_');
   var d = new Date(); var ymd = d.getFullYear() + ('0'+(d.getMonth()+1)).slice(-2) + ('0'+d.getDate()).slice(-2);
   var fname = 'karte_' + name + '_' + ymd + '.json';
-  app.innerHTML = '<h1 tabindex="-1" id="h">カルテができました</h1>'
-    + '<p class="lead">下の内容をコピーするか、ファイルとして保存して、担当者に送ってください。</p>'
-    + '<div class="card"><div class="row"><button type="button" class="btn" id="btnCopy" style="flex:1">内容をコピーする</button><button type="button" class="btn sub" id="btnDl" style="flex:1">ファイルで保存する</button></div>'
+  var zname = 'karte_' + name + '_' + ymd + '.zip';
+  var np = P.list.length;
+  var warns = photoWarnings().map(function(w){ return '<div class="note" role="alert">' + esc(w) + '</div>'; }).join('');
+  var top;
+  if (np){
+    top = '<p class="lead">「写真ごとまとめてダウンロード」を押して、できたファイルを担当者に送ってください。</p>' + warns
+      + '<div class="card"><button type="button" class="btn wide" id="btnZip">写真ごとまとめてダウンロード（ZIP）</button>'
+      + '<p class="hint">カルテ（karte.json）と写真 ' + np + '枚が、1つのファイルに入ります。ファイル名：' + esc(zname) + '</p>'
+      + '<div class="row" style="margin-top:10px"><button type="button" class="btn sub" id="btnCopy" style="flex:1">内容をコピーする</button><button type="button" class="btn plain" id="btnDl">カルテだけ保存する（写真なし）</button></div>';
+  } else {
+    top = '<p class="lead">下の内容をコピーするか、ファイルとして保存して、担当者に送ってください。</p>' + warns
+      + '<div class="card"><div class="row"><button type="button" class="btn" id="btnCopy" style="flex:1">内容をコピーする</button><button type="button" class="btn sub" id="btnDl" style="flex:1">ファイルで保存する</button></div>';
+  }
+  app.innerHTML = '<h1 tabindex="-1" id="h">カルテができました</h1>' + top
     + '<p class="msg" id="msg" role="status"></p>'
     + '<pre class="json" id="jsonOut" tabindex="0" aria-label="カルテの内容">' + esc(txt) + '</pre>'
-    + '<p class="hint">保存されるファイル名：' + esc(fname) + '</p></div>'
+    + '<p class="hint">カルテだけ保存したときのファイル名：' + esc(fname) + '</p></div>'
     + '<div class="row"><button type="button" class="btn sub" id="btnToReview">確認画面に戻って直す</button><button type="button" class="btn plain" id="btnReset">入力を消して、別の医院のカルテを作る</button></div>';
   nav.classList.add('hidden');
   var msg = document.getElementById('msg');
+  var bz = document.getElementById('btnZip');
+  if (bz) bz.onclick = function(){
+    bz.disabled = true; msg.textContent = 'ZIPファイルを作っています…';
+    var list = P.list.slice();
+    Promise.all(list.map(function(p, i){ var o = photoOut(p, i); return blobBytes(o.blob).then(function(u8){ return {name:o.file, data:u8}; }); }))
+      .then(function(imgs){
+        var zip = makeZip([{name:'karte.json', data:new TextEncoder().encode(txt)}].concat(imgs));
+        downloadBlob(zip, zname);
+        msg.textContent = 'ファイルを保存しました（' + zname + '）。';
+      })
+      .catch(function(){ msg.textContent = 'ZIPファイルを作れませんでした。「カルテだけ保存する」で保存し、写真は別に送ってください。'; })
+      .then(function(){ bz.disabled = false; });
+  };
   document.getElementById('btnCopy').onclick = function(){
     function fallback(){
       try{ var ta=document.createElement('textarea'); ta.value=txt; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); var ok=document.execCommand('copy'); document.body.removeChild(ta); msg.textContent = ok ? 'コピーしました。' : 'コピーできませんでした。下の文字を長押しして選び、コピーしてください。'; }
@@ -658,17 +1020,15 @@ function renderResult(){
   };
   document.getElementById('btnDl').onclick = function(){
     try{
-      var blob = new Blob([txt], {type:'application/json'});
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+      downloadBlob(new Blob([txt], {type:'application/json'}), fname);
       msg.textContent = 'ファイルを保存しました（' + fname + '）。';
     }catch(e){ msg.textContent = '保存できませんでした。「内容をコピーする」を使ってください。'; }
   };
   document.getElementById('btnToReview').onclick = function(){ go('review'); };
   document.getElementById('btnReset').onclick = function(){
     if (!window.confirm('入力した内容を消して、最初の画面に戻りますか？（作ったカルテを保存していない場合は、先に保存してください）')) return;
-    clearStore(); S.answers={}; S.unsure={}; S.hp_url=''; S.result=null; go('start');
+    clearStore(); S.answers={}; S.unsure={}; S.hp_url=''; S.result=null;
+    photoClearAll().then(function(){ go('start'); }, function(){ go('start'); });
   };
   focusH();
 }
@@ -686,7 +1046,11 @@ function go(screen){
 }
 function focusH(){ var h=document.getElementById('h'); if (h) try{ h.focus({preventScroll:true}); }catch(e){ h.focus(); } }
 
-go('start');
+/* 保存してある写真を読み込んでから始める（IndexedDB が応答しないときも1.5秒で始める） */
+var started = false;
+function startOnce(){ if (started) return; started = true; go('start'); }
+photoInit().then(startOnce, startOnce);
+setTimeout(function(){ if (!started){ P.dbOk = false; startOnce(); } }, 1500);
 })();
 </script>
 </body>

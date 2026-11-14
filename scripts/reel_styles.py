@@ -120,16 +120,22 @@ class Base:
         wr.put(im)
         self.last = im
 
-    def progress(self, fr: Image.Image, i: int, color=(255, 255, 255)) -> None:
+    def progress(self, fr: Image.Image, i: int, color=(255, 255, 255), frac: float = 1.0) -> None:
+        """上の進行バー。いまの場面の区切りは、読み上げに合わせて左から伸びていく（止まって見えないように）。"""
         d = ImageDraw.Draw(fr)
         total = len(self.pts)
         M, gap = int(W * 0.08), 10
         seg = (W - M * 2 - gap * (total - 1)) / total
+        dim = tuple(int(c * 0.35) for c in color)
+        y0 = int(H * 0.08)
         for k in range(total):
             x0 = int(M + k * (seg + gap))
-            col = color if k < i else (color[0], color[1], color[2], 70)
-            d.rounded_rectangle([x0, int(H * 0.08), int(x0 + seg), int(H * 0.08) + 9], radius=4,
-                                fill=color if k < i else tuple(int(c * 0.35) for c in color))
+            if k < i - 1 or (k == i - 1 and frac >= 1):
+                d.rounded_rectangle([x0, y0, int(x0 + seg), y0 + 9], radius=4, fill=color)
+            else:
+                d.rounded_rectangle([x0, y0, int(x0 + seg), y0 + 9], radius=4, fill=dim)
+                if k == i - 1 and frac > 0:
+                    d.rounded_rectangle([x0, y0, int(x0 + max(9, seg * frac)), y0 + 9], radius=4, fill=color)
 
     def kind_card(self, pt: dict, w: int) -> Image.Image | None:
         """リール用のカード。カルーセルの中身をそのまま縮めず、要点（×→○、Q→A、数字、項目3つまで）だけを大きな文字で出す。"""
@@ -195,6 +201,7 @@ class Base:
         d = ImageDraw.Draw(card)
         d.rounded_rectangle([0, 0, w - 1, hh - 1], radius=int(W * 0.04), fill=(255, 255, 255, 255))
         y = P
+        self._rows = []
         if big is not None:
             bw = d.textlength(big, font=fb)
             d.text(((w - bw) / 2, y), big, font=fb, fill=n.primary)
@@ -208,25 +215,65 @@ class Base:
         if label:
             d.text((P, y), label, font=fl, fill=ns.SUB)
             y += int(fl.size * 1.9)
+        self._rows = []
+        self._line_rows = []
         for j, (mk, ls, col) in enumerate(wrapped):
+            row_top = y
             x = P
             if mk:
-                d.rounded_rectangle([P, y + int(f.size * 0.05), P + tag, y + int(f.size * 0.05) + tag], radius=int(tag * 0.25),
-                                    fill=col)
+                # 記号の四角は、1行目の文字の見た目の上下の真ん中にそろえる（フォントの余白の分だけ下にずれないように）
+                gb = d.textbbox((0, 0), "国", font=f)
+                top = int(y + (gb[1] + gb[3]) / 2 - tag / 2)
+                d.rounded_rectangle([P, top, P + tag, top + tag], radius=int(tag * 0.25), fill=col)
                 mf = n.f(int(tag * 0.66))
-                mw = d.textlength(mk, font=mf)
-                d.text((P + (tag - mw) / 2, y + int(f.size * 0.05) + (tag - mf.size * 1.15) / 2), mk, font=mf, fill=(255, 255, 255))
+                mb = d.textbbox((0, 0), mk, font=mf)
+                d.text((P + (tag - (mb[2] - mb[0])) / 2 - mb[0], top + (tag - (mb[3] - mb[1])) / 2 - mb[1]), mk, font=mf,
+                       fill=(255, 255, 255))
                 x = P + tag + int(W * 0.03)
             elif kind == "template":
                 d.rectangle([P, y, P + 10, y + len(ls) * lh - int(f.size * 0.3)], fill=col)
                 x = P + int(W * 0.035)
+            line_rows = []
             for ln in ls:
                 d.text((x, y), ln, font=f, fill=RED if (mk == "×" and kind in ("compare", "phone")) else ns.INK)
+                line_rows.append((max(0, y - int(lh * 0.12)), y + lh - int(lh * 0.12)))
                 y += lh
+            if len(wrapped) == 1 and not mk:  # 項目が1つだけの文は、1行ずつ出す
+                self._line_rows = line_rows
             y = max(y, y if not mk else y) + gap
+            self._rows.append((max(0, row_top - gap // 3), min(hh, y - gap // 3)))
             if j < len(wrapped) - 1 and kind in ("compare", "phone", "qa"):
                 d.line([(P, y - gap // 2), (w - P, y - gap // 2)], fill=(228, 230, 234), width=3)
+        if len(self._rows) <= 1 and len(self._line_rows) >= 2:
+            self._rows = self._line_rows
         return card
+
+    def card_at(self, card: Image.Image, rows: list, t: float, t0: float, dur: float) -> Image.Image:
+        """カードの項目を、読み上げに合わせて1つずつ出す。いま話している項目には左に印を付ける。
+        rows はカードの中の各項目の上下の位置。項目が1つ以下なら、そのまま返す。"""
+        if len(rows) <= 1:
+            return card
+        empty = card.copy()
+        de = ImageDraw.Draw(empty)
+        for r0, r1 in rows:
+            de.rectangle([int(W * 0.02), r0, card.width - int(W * 0.02), r1], fill=(255, 255, 255, 255))
+        span = max(0.35 * len(rows), (dur - t0) * 0.62)  # 読み上げの前半〜6割ほどで全部出しきる
+        out = empty
+        latest = None
+        for j, (r0, r1) in enumerate(rows):
+            tj = t0 + span * j / len(rows)
+            if t < tj:
+                break
+            a = ease_out(min(1.0, (t - tj) / 0.35))
+            piece = card.crop((0, r0, card.width, r1))
+            if a < 1:
+                piece.putalpha(piece.getchannel("A").point(lambda v, a=a: int(v * a)))
+            out.alpha_composite(piece, (int((1 - a) * 60), r0))
+            latest = (r0, r1)
+        if latest is not None:
+            ImageDraw.Draw(out).rounded_rectangle([int(W * 0.012), latest[0] + 8, int(W * 0.012) + 10, latest[1] - 8],
+                                                  radius=5, fill=self.n.primary + (255,))
+        return out
 
     def end_scene(self, wr: Writer) -> None:
         sc = (self.post.get("reel") or {}).get("scenes", [])
@@ -324,16 +371,18 @@ class Telop(Base):
         ImageDraw.Draw(lab).text((W * 0.08, head_y - int(W * 0.08)), "結論" if pt.get("kind") == "key" else ns.point_label(self.x.post.get("form"), i, f"POINT {i}"),
                                  font=n.f(int(W * 0.045)), fill=accent + (255,))
         card = self.kind_card(pt, int(W * 0.9))
+        rows = list(getattr(self, "_rows", []) or [])
         if card is not None:  # 見出しと重ならないよう、入りきらないカードは縮める
             avail = int(H * 0.78) - int(hy + W * 0.07)
             if card.height > avail:
                 s_ = avail / card.height
                 card = card.resize((int(card.width * s_), avail), Image.LANCZOS)
+                rows = [(int(a * s_), int(b * s_)) for a, b in rows]
         body = None
         if card is None:
             body, _ = _text_layer(n, pt.get("t", ""), hy + int(W * 0.08), 0.064, color=ink, accent=accent)
         stat_num = pt.get("num") if pt.get("kind") == "stat" else None
-        dur = 1.6 + min(2.8, ns._read_sec(pt) * 0.7)
+        dur = max(1.6 + min(2.8, ns._read_sec(pt) * 0.7), self.nar.need(i))  # 話し終わるまで、この場面の中で動かし続ける
         steps = int(dur * FPS)
         # 前の場面を押し出して入る（縦方向にワイプ）
         prev = self.last
@@ -354,11 +403,12 @@ class Telop(Base):
                     x = int((W - card.width) / 2)
                     y = int(hy + W * 0.07)
                     h_show = max(1, int(card.height * e))
-                    fr.alpha_composite(card.crop((0, 0, card.width, h_show)), (x, y - int(36 * drift)))
+                    cv = self.card_at(card, rows, t, 0.55, dur)
+                    fr.alpha_composite(cv.crop((0, 0, card.width, h_show)), (x, y - int(36 * drift)))
             elif body is not None:
                 bl = _rise(body, t - 0.7, 0.4, 60)
                 fr.alpha_composite(bl.crop((0, int(30 * drift), W, H)), (0, 0))
-            self.progress(fr, i, ink if not light else ns.INK)
+            self.progress(fr, i, ink if not light else ns.INK, frac=(k + 1) / steps)
             fr = _zoom(fr.convert("RGB"), 1.0 + 0.035 * drift, 0.45).convert("RGBA")  # ゆっくり寄り続ける
             if k < 6 and prev is not None:  # 6コマで前の場面からワイプ
                 cut = int(H * ease_in_out((k + 1) / 6))
@@ -411,6 +461,7 @@ class PhotoStory(Base):
         bg = Image.blend(bg, Image.new("RGB", (W, H), (8, 8, 12)), 0.25)
         pan_right = i % 2 == 0
         card = self.kind_card(pt, int(W * 0.9))
+        rows = list(getattr(self, "_rows", []) or [])
         head, hy = _text_layer(n, pt["h"], int(H * 0.14), 0.088, stroke=8, accent=designs._yellow(n))
         badge = _layer()
         db = ImageDraw.Draw(badge)
@@ -427,7 +478,7 @@ class PhotoStory(Base):
         while len(sub_lines) > 4 and f.size > W * 0.052:  # 3行に収まるまで小さくする（途中で切らない）
             f = n.f(int(f.size * 0.92))
             sub_lines = ns.wrap(probe, ns.strip_rich(pt.get("t", "")), f, int(W * 0.84))
-        dur = 1.6 + min(3.8, ns._read_sec(pt) * 0.95)  # 字幕を読み切れる長さ
+        dur = max(1.6 + min(3.8, ns._read_sec(pt) * 0.95), self.nar.need(i))  # 字幕を読み切れて、話し終わるまでの長さ
         steps = int(dur * FPS)
         for k in range(steps):
             t = k / FPS
@@ -447,7 +498,7 @@ class PhotoStory(Base):
             fr.alpha_composite(_rise(head, t - 0.08, 0.4, 70))
             if card is not None and t > 0.7:
                 e = ease_out(min(1.0, (t - 0.7) / 0.4))
-                c = card.copy()
+                c = self.card_at(card, rows, t, 0.9, dur).copy()
                 c.putalpha(c.getchannel("A").point(lambda v: int(v * e)))
                 fr.alpha_composite(c, (int((W - card.width) / 2), int(max(hy + W * 0.06, H * 0.72 - card.height) + (1 - e) * 80)))
             elif card is None:
@@ -463,7 +514,7 @@ class PhotoStory(Base):
                                         radius=14, fill=(0, 0, 0, int(a * 0.7)))
                     d.text(((W - lw) / 2, yy), ln, font=f, fill=(255, 255, 255, a))
                     yy += int(f.size * 1.75)
-            self.progress(fr, i)
+            self.progress(fr, i, frac=(k + 1) / steps)
             if k < 7 and self.last is not None:  # 前の写真を横に押し出して切り替える
                 e = ease_in_out((k + 1) / 7)
                 pf = Image.new("RGBA", (W, H))

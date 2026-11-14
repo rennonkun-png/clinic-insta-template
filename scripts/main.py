@@ -99,7 +99,7 @@ def main() -> int:
         else:
             frames = render_reel_frames(cfg, post, OUTPUT_DIR / "frames", stem, illust=illust)
             video = media.build_reel(frames, OUTPUT_DIR / f"{stem}.mp4")
-        cover = render_square(cfg, post, OUTPUT_DIR / f"{stem}_cover.jpg", illust=illust)
+        cover = render_square(cfg, post, OUTPUT_DIR / f"{stem}_cover.jpg", illust=illust, reel=True)  # リールの表紙は縦長
         files = [video.name, cover.name]
     else:
         out = render_square(cfg, post, OUTPUT_DIR / f"{stem}.jpg", illust=illust)

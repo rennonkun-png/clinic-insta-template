@@ -1036,13 +1036,26 @@ def draw_summary(n: Note, post: dict, pts: list[dict], W: int, H: int, reel: boo
 
 
 # ---------------------------------------------------------------- 出力
-def render_square(cfg: dict, post: dict, out_path: Path, size: int = 1080) -> Path:
+def render_square(cfg: dict, post: dict, out_path: Path, size: int = 1080, reel: bool = False) -> Path:
+    """表紙の画像。reel=True のときはリール用の縦長（1080x1920）。
+    プロフィールの一覧ではリールの表紙が縦3:4（上下240pxずつを除いた範囲）に切られるので、文字はその中に収まる配置で描く。"""
     n = Note(cfg)
+    w, h = (1080, 1440) if reel else (size, size)  # リールは、一覧で見える3:4で描いてから縦長に広げる
     if post.get("design", "note") != "note":
         import designs
-        img = designs.draw_cover(n, post, size, size, post["design"])
+        img = designs.draw_cover(n, post, w, h, post["design"])
     else:
-        img = draw_cover(n, post, size, size)
+        img = draw_cover(n, post, w, h)
+    if reel:
+        img = img.convert("RGB")
+        full = Image.new("RGB", (1080, 1920))
+        # 上下の余白は、表紙の上端・下端の平均の色でなめらかにつなぐ（ぼかした文字が見えないように）
+        top = img.crop((0, 0, 1080, 12)).resize((1, 1), Image.BOX).getpixel((0, 0))
+        bot = img.crop((0, 1428, 1080, 1440)).resize((1, 1), Image.BOX).getpixel((0, 0))
+        full.paste(Image.new("RGB", (1080, 240), top), (0, 0))
+        full.paste(Image.new("RGB", (1080, 240), bot), (0, 1680))
+        full.paste(img, (0, 240))
+        img = full
     out_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(out_path, "JPEG", quality=93)
     return out_path

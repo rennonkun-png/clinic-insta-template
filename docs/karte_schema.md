@@ -68,8 +68,32 @@
 |---|---|---|---|
 | `person_mode` | 人物の出し方 | `photo_cutout` 先生の写真を切り抜いて使う / `photo_illust` 先生の写真を元にしたイラスト / `fictional_illust` 架空の先生のイラスト（「イメージ」と表示し、名前は付けない） / `none` 人物は出さない | `photo_cutout` |
 | `person_consent` | 顔・写真使用の書面同意 | `received` もらった / `pending` これからもらう。`person_mode` が `photo_cutout` か `photo_illust` のときだけ。**`pending` の間は先生の写真・イラストを使わない** | なし（わからない→`pending`） |
-| `person_photos` | 使う写真 | `use_hp` HPの写真（使用可否を医院に確認） / `send_new` 新しく撮って送ってもらう / `later` あとで決める。出す条件は `person_consent` と同じ | `use_hp` |
+| `person_photos` | 使う写真 | `upload` 手元の写真をこの画面で入れる（`photos` の中の `kind: "doctor"` を使う） / `use_hp` HPの写真（使用可否を医院に確認） / `send_new` 新しく撮って送ってもらう / `later` あとで決める。出す条件は `person_consent` と同じ。`upload` なのに先生の写真が0枚のときは、確認画面と出力画面で案内が出る（カルテは作れる） | `upload` |
 | `illust_style` | イラストのタッチ | `soft` やわらかい手描き風 / `line` すっきりした線の絵 / `watercolor` 水彩風。`person_mode` が `photo_illust` か `fictional_illust` のときだけ | `soft` |
+
+### 写真
+
+| キー | 表示名 | 値 | 既定（おすすめ） |
+|---|---|---|---|
+| `photos` | 医院の写真 | 写真の一覧（配列）。入れていなければ `[]`。画像の本体は JSON に入らず、ZIP の `photos/` フォルダに入る | `[]`（任意） |
+
+一覧の1件の形:
+
+```json
+{"file": "photos/01_doctor.jpg", "kind": "doctor", "memo": "院長の正面写真", "consent": true}
+```
+
+| 項目 | 意味 |
+|---|---|
+| `file` | ZIP の中のファイルの場所。`photos/` ＋ 2けたの番号 ＋ `_` ＋ 種類の英字 ＋ 拡張子 |
+| `kind` | 種類: `doctor` 先生 / `staff` スタッフ / `interior` 院内（待合・診療室） / `equipment` 設備・機器 / `exterior` 外観・看板 / `logo` ロゴ / `other` その他 |
+| `memo` | ひとことメモ（空なら `""`） |
+| `consent` | 人が写る種類（`doctor`・`staff`）だけ `true` / `false`。ほかは `null`。**`false` の写真は投稿に使わない** |
+
+- 画像はブラウザの中で縮めてから保存する: 長辺1600px の JPEG（品質0.85、透過部分は白）。
+- PNG で入れて種類を `logo` にした写真だけは、透過を残すため長辺1000px の PNG（拡張子 `.png`）になる。
+- 患者さんが写っている写真は入れない決まり（画面で注意している）。
+- HEIC はブラウザが読めるときだけ入る（読めないときは「JPGかPNGで入れてください」と表示）。
 
 ### 動画
 
@@ -101,3 +125,5 @@
 
 - 下書きの貼り付け: `{"answers":{...}}` または答えだけの `{...}` を受け付けます。値はコード（`green`）でも表示名（`緑系`）でも可。`ai_disclosure` は貼り付けでは入らず、必ず画面で確認します。
 - 入力の途中は、ブラウザの `localStorage`（キー `clinic_karte_draft_v1`）に保存されます。
+- 写真は `localStorage` に入らないため、IndexedDB（データベース `clinic_karte_photos_v1`、ストア `photos`）に保存されます。IndexedDB が使えないブラウザでは「この画面を閉じると写真は消えます」と表示します。`photos` は下書きの貼り付けでは入りません。
+- 出力は2種類: カルテだけの JSON（`karte_医院名_日付.json`）と、写真ごとの ZIP（`karte_医院名_日付.zip`、中身は `karte.json` と `photos/` フォルダ。無圧縮）。写真が1枚以上あるときは ZIP が主な出力です。

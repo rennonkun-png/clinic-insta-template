@@ -255,6 +255,9 @@ def _ok_break(units: list[str], k: int) -> bool:
     nxt, prev = units[k], units[k - 1]
     if nxt[0] in NO_HEAD or prev[-1] in NO_TAIL:
         return False
+    # 助詞（を・が・は・に・へ・で）を行頭に置かない（「」）を」の後などで起きやすい）
+    if nxt[0] in "をがはにへで" and (prev[-1] in "」』）】" or _kind(prev[-1]) in "KTA"):
+        return False
     return True
 
 
@@ -294,11 +297,21 @@ def wrap(d: ImageDraw.ImageDraw, text: str, f: ImageFont.FreeTypeFont, max_w: in
             while n < len(units) and _fits(d, "".join(units[: n + 1]), f, max_w):
                 n += 1
             cut = n
-            for k in range(cut, max(1, cut - 3), -1):
-                if _good_break(units, k):
+            # かっこ（「」（）など）の中では切らない。かっこの外で切れる所が近くにあれば、そこで切る
+            depth, d_at = 0, [0]
+            for u in units:
+                depth += sum(u.count(c) for c in "（「『【") - sum(u.count(c) for c in "）」』】")
+                d_at.append(depth)
+            outside = [k for k in range(cut, max(0, cut - 5), -1) if k >= 1 and d_at[k] <= 0 and _ok_break(units, k)
+                       and _fits(d, "".join(units[:k]), f, max_w) and d.textlength("".join(units[:k]), font=f) >= max_w * 0.25]
+            if d_at[cut] > 0 and outside:
+                cut = next((k for k in outside if _good_break(units, k)), outside[0])
+            else:
+              for k in range(cut, max(1, cut - 3), -1):
+                if _good_break(units, k) and d_at[k] <= 0:
                     cut = k
                     break
-            else:
+              else:
                 for k in range(cut, max(0, cut - 3), -1):
                     if _ok_break(units, k):
                         cut = k
@@ -757,10 +770,10 @@ def is_note(cfg: dict) -> bool:
     return (cfg.get("theme") or {}).get("style") == "note"
 
 
-def render_square(cfg: dict, post: dict, out_path: Path, size: int = 1080, illust: Path | None = None) -> Path:
+def render_square(cfg: dict, post: dict, out_path: Path, size: int = 1080, illust: Path | None = None, reel: bool = False) -> Path:
     if is_note(cfg):
         import note_style
-        note_style.render_square(cfg, post, out_path, size)
+        note_style.render_square(cfg, post, out_path, size, reel=reel)
         log(f"画像を生成しました: {out_path}")
         return out_path
     th = Theme(cfg)
