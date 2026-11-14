@@ -74,6 +74,13 @@ async def _synth_all(texts: list[str], work: Path, voice: str, rate: str) -> lis
     return outs
 
 
+def _duration_any(path: Path) -> float:
+    """音声ファイルの長さ（秒）。測れなければ 60。"""
+    r = subprocess.run([ffmpeg_path(), "-i", str(path)], capture_output=True, text=True, encoding="utf-8", errors="ignore", timeout=60)
+    m = re.search(r"Duration: (\d+):(\d+):([\d.]+)", r.stderr)
+    return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3)) if m else 60.0
+
+
 def _gain_to(path: Path, target_db: float) -> float:
     """曲の平均音量を測り、target_db にそろえる倍率を返す。"""
     r = subprocess.run([ffmpeg_path(), "-i", str(path), "-t", "60", "-af", "volumedetect", "-vn", "-f", "null", "-"],
@@ -164,7 +171,9 @@ class Narration:
         self.starts[i] = sec
 
     def mux(self, video: Path, total_sec: float) -> None:
-        """場面の始まりに合わせて音声を重ね、動画の音を差し替える。"""
+        """場面の始まりに合わせて音声を重ね、動画の音を差し替える。
+        どの音も長さが決まった形にして（無限のくり返し・無限の無音を使わない）、ffmpeg が止まらないようにする。
+        うまくいかないときは BGM なし → 元の動画（無音）の順に切り替え、投稿は止めない。"""
         segs = [(it[0], st) for it, st in zip(self.items, self.starts) if it and st >= 0]
         music = self.music(total_sec)
         if not segs and not music:
@@ -172,25 +181,48 @@ class Narration:
         ff = ffmpeg_path()
         tmp = video.with_name(video.stem + "_v.mp4")
         video.replace(tmp)
-        args = [ff, "-y", "-loglevel", "error", "-i", str(tmp)]
-        filt = []
-        for k, (wav, st) in enumerate(segs, 1):
-            args += ["-i", str(wav)]
-            ms = int((st + 0.2) * 1000)
-            filt.append(f"[{k}:a]adelay={ms}|{ms}[a{k}]")
-        labels = [f"[a{k}]" for k in range(1, len(segs) + 1)]
-        if music:  # BGM は声の後ろで小さく流し、最後はフェードアウト
-            m = len(segs) + 1
-            args += ["-stream_loop", "-1", "-i", str(music)]
-            vol = (self.bgm_volume if segs else self.bgm_volume * 2.2) * getattr(self, "music_gain", 1.0)
-            filt.append(f"[{m}:a]aresample=44100,aformat=channel_layouts=stereo,atrim=0:{total_sec:.2f},"
-                        f"volume={vol:.3f},afade=t=in:d=1,afade=t=out:st={max(0, total_sec - 2):.2f}:d=2[bg]")
-            labels.append("[bg]")
-        filt.append(f"{''.join(labels)}amix=inputs={len(labels)}:normalize=0,apad[aout]")
-        args += ["-filter_complex", ";".join(filt), "-map", "0:v", "-map", "[aout]",
-                 "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-t", f"{total_sec:.2f}", "-movflags", "+faststart", str(video)]
-        print(f"[voice] 声 {len(segs)} 場面と BGM（{'あり' if music else 'なし'}）を重ねます", flush=True)
-        subprocess.run(args, check=True, timeout=600)
-        tmp.unlink(missing_ok=True)
+
+        def build(with_music: bool) -> list[str]:
+            args = [ff, "-y", "-loglevel", "error", "-i", str(tmp)]
+            filt = []
+            for k, (wav, st) in enumerate(segs, 1):
+                args += ["-i", str(wav)]
+                ms = int((st + 0.2) * 1000)
+                filt.append(f"[{k}:a]adelay={ms}|{ms}[a{k}]")
+            labels = [f"[a{k}]" for k in range(1, len(segs) + 1)]
+            if with_music and music:  # BGM は声の後ろで小さく流し、最後はフェードアウト
+                m = len(segs) + 1
+                dur = max(1.0, _duration_any(music))
+                loops = int(total_sec // dur) + 1  # 必要な回数だけくり返す（無限にしない）
+                args += ["-stream_loop", str(loops), "-i", str(music)]
+                vol = (self.bgm_volume if segs else self.bgm_volume * 2.2) * getattr(self, "music_gain", 1.0)
+                filt.append(f"[{m}:a]aresample=44100,aformat=channel_layouts=stereo,atrim=0:{total_sec:.2f},"
+                            f"volume={vol:.3f},afade=t=in:d=1,afade=t=out:st={max(0, total_sec - 2):.2f}:d=2[bg]")
+                labels.append("[bg]")
+            if not labels:
+                return []
+            filt.append(f"{''.join(labels)}amix=inputs={len(labels)}:duration=longest:normalize=0,"
+                        f"apad=whole_dur={total_sec:.2f},atrim=0:{total_sec:.2f}[aout]")
+            return args + ["-filter_complex", ";".join(filt), "-map", "0:v", "-map", "[aout]",
+                           "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-t", f"{total_sec:.2f}",
+                           "-movflags", "+faststart", str(video)]
+
+        done = False
+        for with_music in ((True, False) if music else (False,)):
+            args = build(with_music)
+            if not args:
+                continue
+            print(f"[voice] 声 {len(segs)} 場面と BGM（{'あり' if with_music and music else 'なし'}）を重ねます", flush=True)
+            try:
+                subprocess.run(args, check=True, timeout=240)
+                done = True
+                break
+            except (subprocess.TimeoutExpired, subprocess.CalledProcessError) as e:
+                print(f"[voice] 音を重ねられませんでした（{type(e).__name__}）。形を変えてやり直します", flush=True)
+        if done:
+            tmp.unlink(missing_ok=True)
+        else:
+            print("[voice] 音を付けられなかったため、無音の動画のまま出します", flush=True)
+            tmp.replace(video)
         import shutil
         shutil.rmtree(self.work, ignore_errors=True)  # 作業用の音声は消す
