@@ -47,6 +47,7 @@ description: Instagram 自動投稿の「毎週のネタづくり」を裏で自
 - 全部の投稿が approved（OK）になったら、期限を待たずに D へ
 
 ### D. 期限を過ぎた（金曜の回）または全部 OK → 予定に入れる
+- review.json の `sample: true` のもの（見た目確認用のサンプル）は無視し、最初の本番の作成時に review.json から消す
 1. 採用する投稿: approved と、何も選ばれなかったもの。fix のものは直した版（直しが間に合わなければ、直す前の版のうち採点5点のもの）。rejected（使わない）は外し、予備の題材から作った投稿で埋める（その分は確認なしで採用）
 2. repo/content/generated.json に足す（date 付き）。`scripts/quality_check.py`（E・W 0件）を全体で通す
 3. repo に commit・push（日本語のコミット文、末尾に `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`）。毎日投稿のワークフローを dry_run で1回動かして成功を確かめる
