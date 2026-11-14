@@ -1,0 +1,48 @@
+name: 競合アカウントの比較
+
+on:
+  schedule:
+    # 毎週月曜 日本時間 7:30（UTC 22:30 日曜）。週次分析のあとに動く
+    - cron: "30 22 * * 0"
+  workflow_dispatch:
+    inputs:
+      check:
+        description: "試しに読むアカウント（スペース区切り・@なし）。空なら config の competitors を記録"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram-post
+  cancel-in-progress: false
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
+
+      - name: 競合の公開情報を読む（自社の Instagram 接続を使う。外部サービスは使わない）
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          CHECK: ${{ inputs.check }}
+        run: |
+          if [ -n "$CHECK" ]; then python scripts/competitors.py --check $CHECK; else python scripts/competitors.py; fi
+
+      - name: 結果を保存
+        if: ${{ inputs.check == '' }}
+        run: |
+          git config user.name instapost-bot
+          git config user.email instapost-bot@users.noreply.github.com
+          git add state/competitors.json state/competitors_report.md 2>/dev/null || true
+          git diff --cached --quiet && echo "変更なし" && exit 0
+          git commit -m "競合の比較 $(date -u +%Y-%m-%d)"
+          git pull --rebase && git push
