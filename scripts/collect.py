@@ -63,13 +63,17 @@ def account_day(api: Api, day: date) -> dict:
     row = {"date": day.isoformat()}
 
     def total(metric: str, **extra):
-        try:
-            d = api.get(f"{api.uid}/insights", metric=metric, period="day", metric_type="total_value",
-                        since=since, until=until, **extra)
-            return d["data"][0]
-        except Exception as e:  # noqa: BLE001
-            log(f"{metric} を取れませんでした: {e}")
-            return None
+        # 今日の途中の分は、期間の指定によって空で返ることがあるので、指定のしかたを変えて取り直す
+        last = None
+        for rng in ({"since": since, "until": until}, {"since": since, "until": since + 86400}, {}):
+            try:
+                d = api.get(f"{api.uid}/insights", metric=metric, period="day", metric_type="total_value", **rng, **extra)
+                if d.get("data"):
+                    return d["data"][0]
+            except Exception as e:  # noqa: BLE001
+                last = e
+        log(f"{metric} を取れませんでした: {last or '空でした'}")
+        return None
 
     for key, metric in (("reach", "reach"), ("views", "views"), ("profile_views", "profile_views"),
                         ("website_clicks", "website_clicks"), ("accounts_engaged", "accounts_engaged"),
