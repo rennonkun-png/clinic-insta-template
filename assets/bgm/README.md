@@ -1,0 +1,26 @@
+# リールの BGM
+
+- ここに置いた mp3 から、投稿ごとに1曲を選んで声の後ろに小さく流します（config の `reel.bgm` に `"assets/bgm"` を指定したとき）。
+- `reel.bgm` が `"generate"`（初期値）のときは、プログラムで作った曲を使います。`false` で BGM なし。
+- 素材サイトの曲のファイルは、公開リポジトリに入れないでください（.gitignore で除外しています）。
+  - 例: OpenTracks（旧 DOVA-SYNDROME）は、音源ファイルを誰でも取れる状態に置くことを禁止しています。
+- 曲は、リールを出す日ごとに1曲ずつ進めます（並びは作曲者が続かないよう固定の順で混ぜてあります）。全曲を1回ずつ使い切るまで同じ曲は出ません。18曲・週3本なら、同じ曲は約6週間に1回です。音量は曲ごとに自動でそろえます。
+- 使用中の曲（すべて OpenTracks〈旧 DOVA-SYNDROME〉、作曲者の条件は「サイト準拠」、ループ版がある曲はループ版）:
+  - 10c_loop.mp3 「10℃」 しゃろう https://opentracks.com/bgm/detail/12420
+  - 223am_loop.mp3 「2:23 AM」 しゃろう https://opentracks.com/bgm/detail/13494
+  - weekend_kyoto_loop.mp3 「週末京都現実逃避」 しゃろう https://opentracks.com/bgm/detail/10943
+  - hidamari_loop.mp3 「ヒダマリトロニカ」 しゃろう https://opentracks.com/bgm/detail/8812
+  - atelier_loop.mp3 「アトリエと電脳世界」 しゃろう https://opentracks.com/bgm/detail/10000
+  - morning_loop.mp3 「Morning」 しゃろう https://opentracks.com/bgm/detail/2445
+  - you_and_me.mp3 「You and Me」 しゃろう https://opentracks.com/bgm/detail/13787
+  - parade.mp3 「Parade」 しゃろう https://opentracks.com/bgm/detail/9638
+  - cassette_tape_dream.mp3 「Cassette Tape Dream」 しゃろう https://opentracks.com/bgm/detail/13963
+  - lonely_ghost_tokyo_moon.mp3 「さみしいおばけと東京の月」 しゃろう https://opentracks.com/bgm/detail/14308
+  - lofi_girl.mp3 「ローファイ少女は今日も寝不足」 しゃろう https://opentracks.com/bgm/detail/11912
+  - noraneko.mp3 「野良猫は宇宙を目指した」 しゃろう https://opentracks.com/bgm/detail/2862
+  - hirusagari.mp3 「昼下がり気分」 KK https://opentracks.com/bgm/detail/4695
+  - itsumono_fukei.mp3 「いつもの風景」 KK https://opentracks.com/bgm/detail/4638
+  - haru_no_kitchen.mp3 「春のキッチン」 もっぴーさうんど https://opentracks.com/bgm/detail/2881
+  - hirahira.mp3 「HIRAHIRA」 もっぴーさうんど https://opentracks.com/bgm/detail/2307
+  - yuyake_lemontea.mp3 「夕焼けレモンティー」 もっぴーさうんど https://opentracks.com/bgm/detail/2305
+  - usagi_cafeteria.mp3 「うさぎのカフェテリア」 もっぴーさうんど https://opentracks.com/bgm/detail/3042

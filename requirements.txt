@@ -4,3 +4,5 @@ anthropic>=0.50
 pypdf>=4.0
 imageio-ffmpeg>=0.5
 pynacl>=1.5
+edge-tts>=7.0
+numpy>=1.24

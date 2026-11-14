@@ -60,7 +60,7 @@
       "#○○区歯医者",
       "#歯科クリニック"
     ],
-    "hashtags_max": 10,
+    "hashtags_max": 5,
     "include_specialty_hashtags": true
   },
   "schedule": {

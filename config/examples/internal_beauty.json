@@ -42,7 +42,7 @@
       "#○○区内科",
       "#美容点滴"
     ],
-    "hashtags_max": 10,
+    "hashtags_max": 5,
     "include_specialty_hashtags": true
   },
   "schedule": {

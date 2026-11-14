@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import re
 import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -212,6 +213,8 @@ def pick_post(cfg: dict, posts: list[dict], d: date, state: dict, learning: dict
         last_cat = history[-1].get("category")
         pool = [p for p in pool if p.get("category") != last_cat] or pool
 
+    if (cfg.get("schedule") or {}).get("order") == "sequence":  # 並べた順に出す（同じ系統が続かないよう並べてある場合）
+        return pool[0]
     rng = random.Random(f"{cfg.get('clinic_name','')}-{iso}")
     weights = [post_weight(p, learning) for p in pool]
     return rng.choices(pool, weights=weights, k=1)[0]
@@ -229,6 +232,8 @@ def choose_format(cfg: dict, post: dict, d: date, learning: dict | None = None, 
         reel_days = fmts.get("reel_weekdays") or [3, 6]
         if d.isoweekday() in reel_days and fw.get("reel", 1.0) >= 0.5:
             return "reel"
+    if (cfg.get("theme") or {}).get("style") == "note" and post.get("points"):
+        return "carousel"  # 図解ノートは表紙1枚だけだと中身が伝わらないので、カルーセルにする
     car, img = fw.get("carousel", 1.0), fw.get("image", 1.0)
     if body_n >= 3:
         # 学習結果で明確な差があれば強いほうに寄せる
@@ -270,12 +275,39 @@ def goal_lines(cfg: dict, post: dict, fmt: str) -> list[str]:
     return lines
 
 
+def plain_text(s: str) -> str:
+    """画像用の強調記号（*強調* / ==マーカー==）と改行を外す。"""
+    return re.sub(r"==|\*", "", str(s)).replace("\n", "")
+
+
 def build_caption(cfg: dict, post: dict, fmt: str = "image") -> str:
     """1行目=フック（タイトル）→ 結論1行 → 箇条書き → CTAは1つ → 免責 → 医院名 → ハッシュタグ5〜10個。"""
     cap = cfg.get("caption", {})
     body = list(post.get("body", []))
     lines = [post["title"], ""]
-    if body:
+    if post.get("points") and body:
+        # カルーセルの投稿: 本文欄はカルーセルの言い直しにせず、載っていない補足（理由・場面・注意点）を段落で出す
+        lead = post.get("caption_lead") or ""
+        if lead:
+            lines += [lead, ""]
+        for i, b in enumerate(body):  # 「・」で始まる行が続くところは、空行なしの箇条書きにする
+            nxt = body[i + 1] if i + 1 < len(body) else ""
+            lines.append(b)
+            if not (b.startswith("・") and nxt.startswith("・")):
+                lines.append("")
+        lines.pop()
+    elif post.get("points"):
+        # 手書きの見出しがある投稿: 結論 → 「■見出し＋補足」の繰り返し（番号や箇条記号を混ぜない）
+        lead = post.get("caption_lead") or post.get("lead") or ""
+        if lead:
+            lines += [lead, ""]
+        for pt in post["points"]:
+            lines += [f"■ {plain_text(pt.get('h', ''))}"]
+            if pt.get("t"):
+                lines.append(pt["t"])
+            lines.append("")
+        lines.pop()
+    elif body:
         lines += [body[0], ""]
         lines += [f"・{b}" for b in body[1:]]
     if post.get("caption_extra"):
@@ -308,16 +340,14 @@ def build_caption(cfg: dict, post: dict, fmt: str = "image") -> str:
     if cfg.get("footer_text"):
         lines.append(cfg["footer_text"])
 
-    # ハッシュタグ: 地域・医院名（fixed）を先に、テーマタグを後に。5〜10 個が目安
+    # ハッシュタグ: 地域・医院名（fixed）を先に、テーマタグを後に。Instagram の上限が5個になった（2025年12月〜）ので最大5個
     fixed = [t if t.startswith("#") else f"#{t}" for t in cap.get("hashtags_fixed", []) if t]
     topic = [t if t.startswith("#") else f"#{t}" for t in post.get("hashtags", [])] if cap.get("include_specialty_hashtags", True) else []
     tags: list[str] = []
     for t in fixed + topic:
         if t not in tags:
             tags.append(t)
-    if fmt == "reel" and "#リール" not in tags:
-        tags.append("#リール")
-    tags = tags[: int(cap.get("hashtags_max", 10))]
+    tags = tags[: min(5, int(cap.get("hashtags_max", 5)))]  # Instagram の上限（5個）を超えない
     if tags:
         lines += ["", " ".join(tags)]
     return "\n".join(lines)[:2150]

@@ -45,7 +45,7 @@
       "#クリニック経営",
       "#医院ホームページ"
     ],
-    "hashtags_max": 10,
+    "hashtags_max": 5,
     "include_specialty_hashtags": true
   },
   "schedule": {

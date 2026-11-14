@@ -6,3 +6,10 @@ config/genova.json
 docs/preview/
 docs/images/frames/
 output/
+
+# BGM素材の音源ファイルは公開リポジトリに置かない（素材サイトの規約で音源の配布は禁止）
+assets/bgm/*.mp3
+assets/bgm/*.wav
+
+# 写真素材（Pexels）は運用するアカウントのリポジトリにだけ置く
+assets/photos/

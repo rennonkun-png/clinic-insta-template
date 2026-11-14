@@ -140,17 +140,120 @@ def _fits(d, s, f, max_w) -> bool:
 _UNIT_RE = re.compile(r"「[^」]{1,12}」|『[^』]{1,12}』|\d+人に\d+人|\d+月\d+日|\d+(?:[.,．]\d+)?(?:[〜～]\d+(?:[.,．]\d+)?)?(?:か月|週間|時間|[割分つ本回人日歳年％%秒個枚件度倍歩選gmlLcm]{0,2})|[ァ-ヶー]+|[A-Za-z0-9]+|より|って|から|まで|しか|だけ|ほど|など|.")
 
 
+def _kind(ch: str) -> str:
+    if "\u4e00" <= ch <= "\u9fff" or ch in "々〆ヶ〇○△□":
+        return "K"  # 漢字
+    if "\u30a0" <= ch <= "\u30ff" or ch == "ー":
+        return "T"  # カタカナ
+    if "\u3040" <= ch <= "\u309f":
+        return "H"  # ひらがな
+    if ch.isascii() and (ch.isalnum() or ch in "%.,-+/:#&"):
+        return "A"
+    if ch in "０１２３４５６７８９％":
+        return "A"
+    return "P"  # 記号
+
+
+# 文節の切れ目を作らない「後ろにつく」ひらがなの長さの上限（これより長いひらがなは助詞の後ろで切る）
+_PARTICLE_ENDS = ("から", "まで", "より", "だけ", "など", "では", "には", "とは", "ので", "のに", "けど", "ても", "は", "を")
+
+
+def _split_hira(run: str) -> list[str]:
+    """長いひらがなの並びを、助詞・語尾のあとで区切る。"""
+    if len(run) <= 8:
+        return [run]
+    out, cur = [], ""
+    i = 0
+    while i < len(run):
+        cur += run[i]
+        i += 1
+        if len(cur) >= 3 and i < len(run):
+            for pe in _PARTICLE_ENDS:
+                if cur.endswith(pe) and run[i] not in "っゃゅょぁぃぅぇぉー":
+                    out.append(cur)
+                    cur = ""
+                    break
+    if cur:
+        out.append(cur)
+    return out
+
+
 def _units(text: str) -> list[str]:
-    return _UNIT_RE.findall(text)
+    """文節に近い単位に分ける。漢字・カタカナ・英数字のかたまりに、後ろのひらがな（送りがな・助詞）を付ける。
+    折り返しはこの単位の切れ目でだけ行う（「大丈/夫」「ありがと/う」のような切れ方をしない）。"""
+    units: list[str] = []
+    cur = ""
+    prev = ""
+    i = 0
+    n = len(text)
+    while i < n:
+        ch = text[i]
+        k = _kind(ch)
+        if ch in "「『（【":  # 開きかっこは次の語とくっつける
+            if cur:
+                units.append(cur)
+            cur, prev = ch, "open"
+            i += 1
+            continue
+        if k == "P" and (ch in NO_HEAD or ch in "」』）】"):  # 閉じかっこ・句読点は前にくっつける
+            cur += ch
+            prev = "P"
+            i += 1
+            continue
+        if k == "H":
+            j = i
+            while j < n and _kind(text[j]) == "H":
+                j += 1
+            run = text[i:j]
+            parts = _split_hira(run)
+            if prev in ("K", "T", "A", "open", "H") or not cur:
+                cur += parts[0]
+                rest = parts[1:]
+            else:
+                units.append(cur)
+                cur = parts[0]
+                rest = parts[1:]
+            for part in rest:
+                units.append(cur)
+                cur = part
+            prev = "H"
+            i = j
+            continue
+        if k in ("K", "T", "A"):
+            prefix = cur in ("お", "ご") or cur.endswith(("「お", "「ご", "（お", "（ご"))
+            one_kana = (prev == "H" and len(cur) >= 2 and _kind(cur[-1]) == "H" and _kind(cur[-2]) == "K"
+                        and cur[-1] not in "はがをにでとのもへやかよねな"
+                        and i + 1 < n and _kind(text[i]) == "K")
+            if prev == "H" and len(cur) > 1 and cur[-1] in "おご" and not one_kana:
+                units.append(cur[:-1])  # 「にお待ち」→「に」｜「お待ち」（お・ご は後ろの語につける）
+                cur = cur[-1]
+            elif prev in ("H", "P") and cur and not prefix and not one_kana:
+                units.append(cur)
+                cur = ""
+            # 漢字・カタカナ・英数字が続くところ（「電話タップ計測」「〇〇市歯医者」）は1つの語として切らない
+            cur += ch
+            prev = k
+            i += 1
+            continue
+        if ch in " 　":
+            cur += ch
+            units.append(cur)
+            cur, prev = "", ""
+            i += 1
+            continue
+        cur += ch
+        prev = "P"
+        i += 1
+    if cur:
+        units.append(cur)
+    return [u for u in units if u]
 
 
 def _ok_break(units: list[str], k: int) -> bool:
     if k <= 0 or k >= len(units):
         return False
     nxt, prev = units[k], units[k - 1]
-    if nxt[0] in NO_HEAD or nxt[0] in AVOID_HEAD or prev[-1] in NO_TAIL:
-        return False
-    if "\u4e00" <= prev[-1] <= "\u9fff" and "ぁ" <= nxt[0] <= "ん":
+    if nxt[0] in NO_HEAD or prev[-1] in NO_TAIL:
         return False
     return True
 
@@ -159,29 +262,59 @@ def _good_break(units: list[str], k: int) -> bool:
     return _ok_break(units, k) and units[k - 1][-1] in GOOD_BREAK_AFTER
 
 
+def words_fit(d: ImageDraw.ImageDraw, text: str, f: ImageFont.FreeTypeFont, max_w: int) -> bool:
+    """どの語（文節）も1行に収まるか。大きな見出しは、収まるまで文字を小さくしてから折り返す。"""
+    return all(_fits(d, u, f, max_w) for para in str(text).split("\n") for u in _units(para))
+
+
 def wrap(d: ImageDraw.ImageDraw, text: str, f: ImageFont.FreeTypeFont, max_w: int) -> list[str]:
     lines: list[str] = []
     for para in str(text).split("\n"):
-        units = _units(para)
+        units = []
+        for u in _units(para):  # 1単位だけで行に入らないときは、文字の種類の変わり目 → 1文字ずつ の順に分ける
+            if _fits(d, u, f, max_w):
+                units.append(u)
+                continue
+            parts, cur = [], ""
+            for ch in u:  # 長すぎる語は、文字の種類の変わり目（漢字→ひらがな、漢字とカタカナ）で分ける
+                # ひらがなの前では切らない（「を」「が」などが行頭に来ないように）。漢字・カタカナ・英数字の前で切る
+                if cur and len(cur) >= 2 and ((_kind(ch) != _kind(cur[-1]) and _kind(ch) in "KTA") or cur[-1] in "を、"):
+                    parts.append(cur)
+                    cur = ""
+                cur += ch
+            parts.append(cur)
+            for part in parts:
+                units.extend([part] if _fits(d, part, f, max_w) else list(part))
+        para_lines: list[str] = []
         while units:
             if _fits(d, "".join(units), f, max_w):
-                lines.append("".join(units))
+                para_lines.append("".join(units))
                 break
             n = 1
             while n < len(units) and _fits(d, "".join(units[: n + 1]), f, max_w):
                 n += 1
             cut = n
-            for k in range(cut, max(1, cut - 8), -1):
+            for k in range(cut, max(1, cut - 3), -1):
                 if _good_break(units, k):
                     cut = k
                     break
             else:
-                for k in range(cut, max(1, cut - 8), -1):
+                for k in range(cut, max(0, cut - 3), -1):
                     if _ok_break(units, k):
                         cut = k
                         break
-            lines.append("".join(units[:cut]))
+            para_lines.append("".join(units[:cut]))
             units = units[cut:]
+        # 最後の行が1〜3文字だけになるときは、前の行から1単位ずつ送る
+        if len(para_lines) >= 2 and len(para_lines[-1]) <= 3:
+            prev_units = _units(para_lines[-2])
+            if len(prev_units) >= 2:
+                moved = prev_units[-1]
+                cand = moved + para_lines[-1]
+                if _fits(d, cand, f, max_w):
+                    para_lines[-2] = "".join(prev_units[:-1])
+                    para_lines[-1] = cand
+        lines.extend(para_lines)
     return lines
 
 
@@ -482,6 +615,12 @@ def _draw_map(cfg: dict, th: Theme, W: int, H: int, total: int, heads: list[str]
 
 
 def one_cta(cfg: dict, post: dict) -> str:
+    variants = (cfg.get("caption", {}) or {}).get("cta_variants") or []
+    if post.get("cta"):
+        return post["cta"]
+    if variants:
+        import hashlib
+        return variants[int(hashlib.md5((post.get("id", "") + "cta").encode()).hexdigest()[:6], 16) % len(variants)]
     svc = (cfg.get("services", {}).get(post.get("service", ""), {}) or {}).get("name")
     goals = cfg.get("goals", [])
     if svc and "acquisition" in goals:
@@ -614,7 +753,16 @@ def _draw_reel_end(cfg: dict, post: dict, th: Theme, W: int, H: int, illust: Pat
 
 
 # ---------------------------------------------------------------- 公開 API
+def is_note(cfg: dict) -> bool:
+    return (cfg.get("theme") or {}).get("style") == "note"
+
+
 def render_square(cfg: dict, post: dict, out_path: Path, size: int = 1080, illust: Path | None = None) -> Path:
+    if is_note(cfg):
+        import note_style
+        note_style.render_square(cfg, post, out_path, size)
+        log(f"画像を生成しました: {out_path}")
+        return out_path
     th = Theme(cfg)
     img = _draw_cover(cfg, post, th, size, size, illust, "続きはキャプションへ")
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -624,6 +772,11 @@ def render_square(cfg: dict, post: dict, out_path: Path, size: int = 1080, illus
 
 
 def render_carousel(cfg: dict, post: dict, out_dir: Path, stem: str, W: int = 1080, H: int = 1350, illust: Path | None = None) -> list[Path]:
+    if is_note(cfg):
+        import note_style
+        paths = note_style.render_carousel(cfg, post, out_dir, stem, W, H)
+        log(f"カルーセル {len(paths)} 枚を生成しました: {out_dir}/{stem}_*.jpg")
+        return paths
     th = Theme(cfg)
     body = post.get("body", [])[:6]
     heads = [split_point(b)[0] for b in body]
@@ -648,6 +801,11 @@ def render_carousel(cfg: dict, post: dict, out_dir: Path, stem: str, W: int = 10
 
 
 def render_reel_frames(cfg: dict, post: dict, out_dir: Path, stem: str, W: int = 1080, H: int = 1920, illust: Path | None = None) -> list[tuple[Path, float]]:
+    if is_note(cfg):
+        import note_style
+        frames = note_style.render_reel_frames(cfg, post, out_dir, stem, W, H)
+        log(f"リール用フレーム {len(frames)} 枚を生成しました")
+        return frames
     th = Theme(cfg)
     body = post.get("body", [])[:5]
     out_dir.mkdir(parents=True, exist_ok=True)

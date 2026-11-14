@@ -31,7 +31,7 @@ from common import (
     should_post_today,
     today_jst,
 )
-from generate_image import render_carousel, render_reel_frames, render_square
+from generate_image import is_note, render_carousel, render_reel_frames, render_square
 from illustration import get_illustration
 import instagram
 import media
@@ -79,14 +79,21 @@ def main() -> int:
     log(f"本日の投稿: [{post['category']}] {post['title']}  形式={fmt}  目的={cfg.get('goals')}")
 
     stem = d.isoformat()
-    illust = get_illustration(cfg, post)  # 医院の写真 or 無料AIイラスト or なし
+    illust = None if is_note(cfg) else get_illustration(cfg, post)  # 医院の写真 or 無料AIイラスト or なし
     files: list[str] = []
     if fmt == "carousel":
         paths = render_carousel(cfg, post, OUTPUT_DIR, stem, illust=illust)
         files = [p.name for p in paths]
     elif fmt == "reel":
-        frames = render_reel_frames(cfg, post, OUTPUT_DIR / "frames", stem, illust=illust)
-        video = media.build_reel(frames, OUTPUT_DIR / f"{stem}.mp4")
+        if is_note(cfg) and (post.get("reel") or post.get("points")):  # 型（スマホ操作・大きな文字・写真）を投稿ごとに切り替える
+            import reel_styles
+            video = reel_styles.render_reel(cfg, post, OUTPUT_DIR / f"{stem}.mp4")
+        elif is_note(cfg):  # 1コマずつ描いて動きを付ける
+            import reel_anim
+            video = reel_anim.render_reel_video(cfg, post, OUTPUT_DIR / f"{stem}.mp4")
+        else:
+            frames = render_reel_frames(cfg, post, OUTPUT_DIR / "frames", stem, illust=illust)
+            video = media.build_reel(frames, OUTPUT_DIR / f"{stem}.mp4")
         cover = render_square(cfg, post, OUTPUT_DIR / f"{stem}_cover.jpg", illust=illust)
         files = [video.name, cover.name]
     else:

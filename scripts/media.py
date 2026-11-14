@@ -25,7 +25,7 @@ def ffmpeg_available() -> bool:
     return ffmpeg_path() is not None
 
 
-def build_reel(frames: list[tuple[Path, float]], out_path: Path, fps: int = 30) -> Path:
+def build_reel(frames: list[tuple[Path, float]], out_path: Path, fps: int = 30, motion: bool = True) -> Path:
     """frames: [(画像パス, 秒数), ...] → 1080x1920 の mp4 (H.264 + 無音AAC)。
     Instagram リールの要件: 3秒〜15分、縦 9:16 推奨、H.264/AAC。
     """
@@ -39,6 +39,9 @@ def build_reel(frames: list[tuple[Path, float]], out_path: Path, fps: int = 30) 
         inputs += ["-i", str(p)]  # 静止画1枚 → zoompan が sec 秒ぶんのフレームを生成
         n = int(sec * fps)
         # ゆっくりズームイン + 冒頭/末尾のフェード
+        if not motion:  # 文字中心のデザインはズーム・暗転なしで切り替える（にじみ・暗い瞬間を出さない）
+            filters.append(f"[{i}:v]scale=1080:1920,loop=loop={n - 1}:size=1:start=0,fps={fps},setsar=1,format=yuv420p,trim=end_frame={n}[v{i}]")
+            continue
         filters.append(
             f"[{i}:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,"
             f"zoompan=z='min(zoom+0.0006,1.08)':d={n}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps={fps},"

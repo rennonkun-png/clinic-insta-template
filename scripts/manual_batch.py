@@ -22,7 +22,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import ROOT, STATE_PATH, build_caption, choose_format, load_config, load_learning, load_posts, load_state, log, pick_post, save_json, should_post_today, today_jst  # noqa: E402
-from generate_image import render_carousel, render_reel_frames, render_square  # noqa: E402
+from generate_image import is_note, render_carousel, render_reel_frames, render_square  # noqa: E402
 from illustration import get_illustration  # noqa: E402
 import media  # noqa: E402
 
@@ -61,13 +61,21 @@ def main() -> int:
             shutil.rmtree(day_dir)
         day_dir.mkdir(parents=True)
         log(f"{d}: [{post['category']}] {post['title']} 形式={fmt}")
-        illust = get_illustration(cfg, post)
+        illust = None if is_note(cfg) else get_illustration(cfg, post)
         files: list[Path] = []
         if fmt == "carousel":
             files = render_carousel(cfg, post, day_dir, "slide", illust=illust)
         elif fmt == "reel":
-            frames = render_reel_frames(cfg, post, day_dir / "frames", "reel", illust=illust)
-            files = [media.build_reel(frames, day_dir / "reel.mp4"), render_square(cfg, post, day_dir / "cover.jpg", illust=illust)]
+            if is_note(cfg) and (post.get("reel") or post.get("points")):
+                import reel_styles
+                video = reel_styles.render_reel(cfg, post, day_dir / "reel.mp4")
+            elif is_note(cfg):
+                import reel_anim
+                video = reel_anim.render_reel_video(cfg, post, day_dir / "reel.mp4")
+            else:
+                frames = render_reel_frames(cfg, post, day_dir / "frames", "reel", illust=illust)
+                video = media.build_reel(frames, day_dir / "reel.mp4")
+            files = [video, render_square(cfg, post, day_dir / "cover.jpg", illust=illust)]
             shutil.rmtree(day_dir / "frames", ignore_errors=True)
         else:
             files = [render_square(cfg, post, day_dir / "post.jpg", illust=illust)]
