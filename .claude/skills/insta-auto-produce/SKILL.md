@@ -32,6 +32,13 @@ description: Instagram 自動投稿の「毎週のネタづくり」を裏で自
 3. 何もすることが無ければ log.md に1行書いて終わる（連絡しない）
 
 ### B. 月曜（日本時間）で、今週の分をまだ作っていない → 作る
+0. **競合を入れ替える**（毎週。旅河さんの指示「8つだけじゃなく毎回調べて色んなアカウントを分析」2026-11-15）
+   - ずっと比べる基本の8つは config の `competitors`（変えない）。毎週の入れ替え分は repo/state/competitor_pool.json の `accounts`（`{username, added, reason, status: "active"|"retired"|"unreadable"}`）
+   - Web 検索（WebSearch）で、医院・クリニック・歯科の集患／SNS運用／開業支援を発信している Instagram アカウントや、伸びている医院の公式アカウントを探し、**今まで一度も入れたことのないもの**を5〜8個選ぶ（retired・unreadable も含めて重複しない。前の週と同じ探し方・同じ系統だけにしない）
+   - `python -X utf8 .claude/skills/insta-auto-produce/check_accounts.py rennonkun-png/clinic-insta-own 名前1 名前2 ...` で読めるか確かめる（GitHub 上で読むのでトークンは手元に出ない）。OK のものだけ status: active で足す
+   - active は15個まで。超えたら、最近30日投稿がない・反応率が低い・話題が合わないものから retired にする（理由を書く）
+   - 試し読みの結果（比較表・反応が多かった投稿）は、そのままこの週のネタの参考にする（gen/insights.md に「新しい競合から学んだこと」として書く）。日曜 22:00 の定期実行から、基本の8つと active 全部が毎週記録され、分析サイトの競合比較に入る
+   - repo に commit・push（ハッシュタグの人気投稿は Meta の審査が要るため使えない。審査なしで読めるのはアカウント名を指定した読み取りだけ）
 1. **データを読む**（記録が3週間分以上あるとき）: analytics/site/data/<account>/posts.json と post_daily から、投稿後7日時点の「リーチ」「保存率」「シェア」「フォロー」を、話題（topic）・形式・リールの型・曜日ごとに比べ、伸びた傾向と伸びなかった傾向をメモ（gen/insights.md）。競合（competitors.json）の反応が多い投稿の話題も見る。3週間未満なら採点表中心で作る
 2. **次の週（来週の月〜日）の7本を作る**。日付ごとの形式は config の formats.reel_weekdays で決まる（その日がリールの日ならリール向けの台本・reel を必ず入れる）。各投稿に `"date": "YYYY-MM-DD"` を付ける（common.pick_post は date が今日の投稿を最優先で出す）。`category` も必ず付ける。話題・文例・例え・写真は既存の全投稿と重ねない。書き方は docs/production/CONTENT_SPEC.md
    - 下書きはサブエージェント（model: sonnet）に、直しも sonnet、採点だけ opus

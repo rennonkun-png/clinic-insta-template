@@ -2,12 +2,12 @@ name: 競合アカウントの比較
 
 on:
   schedule:
-    # 毎週月曜 日本時間 7:30（UTC 22:30 日曜）。週次分析のあとに動く
-    - cron: "30 22 * * 0"
+    # 毎週日曜 日本時間 22:00（UTC 13:00）。月曜 2:00 のネタづくりが、最新の競合を見られるように
+    - cron: "0 13 * * 0"
   workflow_dispatch:
     inputs:
       check:
-        description: "試しに読むアカウント（スペース区切り・@なし）。空なら config の competitors を記録"
+        description: "試しに読むアカウント・ハッシュタグ（スペース区切り。タグは # を付ける）。空なら設定どおりに記録"
         type: string
         default: ""
 
@@ -42,7 +42,7 @@ jobs:
         run: |
           git config user.name instapost-bot
           git config user.email instapost-bot@users.noreply.github.com
-          git add state/competitors.json state/competitors_report.md 2>/dev/null || true
+          for f in state/competitors.json state/competitors_report.md state/competitor_pool.json state/hashtag_top.json; do if [ -f "$f" ]; then git add "$f"; fi; done
           git diff --cached --quiet && echo "変更なし" && exit 0
           git commit -m "競合の比較 $(date -u +%Y-%m-%d)"
           git pull --rebase && git push

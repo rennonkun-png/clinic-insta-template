@@ -4,7 +4,11 @@ Instagram の「ビジネスディスカバリー」機能で、ほかのビジ�
 （フォロワー数・投稿数・最近の投稿のいいね数・コメント数・種類・投稿日時）を読む。読むだけで、相手には何も通知されない。
 
 使い方:
-  config の "competitors": ["ユーザー名", ...] に比べたいアカウントを書く（@ は付けない）
+  config の "competitors": ["ユーザー名", ...] に、ずっと比べ続けるアカウントを書く（@ は付けない）
+  state/competitor_pool.json の "accounts" に、毎週の調査で見つけたアカウントが入る（Claude が毎週足し、入れ替える）
+    読めなかったアカウント（個人アカウント・非公開・存在しない）は、ここで自動的に status: "unreadable" にして次から外す
+  config の "competitor_hashtags": ["タグ名", ...] があれば、そのハッシュタグで今伸びている投稿（上位）も集める
+    （アカウント名は Instagram が公開しないため、投稿の中身・形式・反応の数を見る。7日で30タグまでの決まりがある）
   python scripts/competitors.py            # state/competitors.json に記録し、state/competitors_report.md を作る
   python scripts/competitors.py --check a b  # 設定に関係なく、指定したアカウントを読めるか試す
 
@@ -37,6 +41,33 @@ def fetch(user_id: str, token: str, username: str) -> dict:
     if "error" in data:
         raise RuntimeError(data["error"].get("message", str(data["error"])))
     return data.get("business_discovery", {})
+
+
+POOL_PATH = STATE_DIR / "competitor_pool.json"
+
+
+def load_pool() -> dict:
+    return json.loads(POOL_PATH.read_text(encoding="utf-8")) if POOL_PATH.exists() else {"accounts": []}
+
+
+def hashtag_top(user_id: str, token: str, tag: str, limit: int = 15) -> list[dict]:
+    """ハッシュタグの「人気の投稿」を読む。"""
+    base = instagram._base(token)
+    r = requests.get(f"{base}/ig_hashtag_search", params={"user_id": user_id, "q": tag, "access_token": token}, timeout=60).json()
+    if "error" in r:
+        raise RuntimeError(r["error"].get("message", str(r["error"])))
+    if not r.get("data"):
+        return []
+    hid = r["data"][0]["id"]
+    m = requests.get(f"{base}/{hid}/top_media", params={
+        "user_id": user_id, "access_token": token, "limit": 50,
+        "fields": "id,caption,media_type,media_product_type,like_count,comments_count,permalink,timestamp"}, timeout=60).json()
+    if "error" in m:
+        raise RuntimeError(m["error"].get("message", str(m["error"])))
+    items = sorted(m.get("data", []), key=lambda x: (x.get("like_count") or 0) + (x.get("comments_count") or 0), reverse=True)
+    return [{"permalink": x.get("permalink"), "likes": x.get("like_count"), "comments": x.get("comments_count"),
+             "type": x.get("media_product_type") or x.get("media_type"),
+             "timestamp": x.get("timestamp"), "caption": (x.get("caption") or "").replace("\n", " ")[:120]} for x in items[:limit]]
 
 
 def summarize(bd: dict) -> dict:
@@ -90,6 +121,20 @@ def report_md(rows: list[dict], date: str) -> str:
     return "\n".join(out)
 
 
+def hashtag_md(tag_rows: dict) -> str:
+    if not tag_rows:
+        return ""
+    out = ["", "# ハッシュタグで今伸びている投稿（人気の投稿の上位）", ""]
+    for t, items in tag_rows.items():
+        out.append(f"## #{t}")
+        if isinstance(items, str):
+            out.append(f"- {items[:80]}")
+        for p in items[:5] if isinstance(items, list) else []:
+            out.append(f"- いいね{p['likes']}・コメント{p['comments']}（{p['type']}）{p['caption'][:60]} … {p['permalink']}")
+        out.append("")
+    return "\n".join(out)
+
+
 def main() -> int:
     token = os.environ.get("IG_ACCESS_TOKEN", "").strip()
     user_id = os.environ.get("IG_USER_ID", "").strip()
@@ -99,11 +144,19 @@ def main() -> int:
     if instagram.is_ig_login_token(token):
         log("この接続の種類（以前の Instagram ログイン）では、他のアカウントの公開情報を読めません")
         return 0
-    if len(sys.argv) > 1 and sys.argv[1] == "--check":
-        names = sys.argv[2:]
+    check = len(sys.argv) > 1 and sys.argv[1] == "--check"
+    cfg = load_config()
+    pool = load_pool()
+    tags: list[str] = []
+    if check:
+        names = [x.lstrip("@") for x in sys.argv[2:] if not x.startswith("#")]
+        tags = [x.lstrip("#") for x in sys.argv[2:] if x.startswith("#")]
     else:
-        names = [str(x).lstrip("@") for x in (load_config().get("competitors") or [])]
-    if not names:
+        names = [str(x).lstrip("@") for x in (cfg.get("competitors") or [])]
+        names += [a["username"].lstrip("@") for a in pool.get("accounts", []) if a.get("status", "active") == "active"]
+        names = list(dict.fromkeys(names))
+        tags = [str(x).lstrip("#") for x in (cfg.get("competitor_hashtags") or [])][:10]
+    if not names and not tags:
         log("config に competitors がないため、競合の比較は行いません")
         return 0
     rows = []
@@ -121,16 +174,39 @@ def main() -> int:
             log(f"この接続で許可されている権限: {', '.join(granted) or pr}")
         except Exception as e:  # noqa: BLE001
             log(f"権限を確かめられませんでした: {e}")
+    tag_rows: dict[str, list | str] = {}
+    for t in tags:
+        try:
+            tag_rows[t] = hashtag_top(user_id, token, t)
+            log(f"ハッシュタグを読めました: #{t}（{len(tag_rows[t])} 件）")
+        except Exception as e:  # noqa: BLE001
+            tag_rows[t] = f"読めませんでした: {e}"
+            log(f"ハッシュタグを読めませんでした: #{t}（{e}）")
     date = datetime.now(JST).strftime("%Y-%m-%d")
-    if len(sys.argv) > 1 and sys.argv[1] == "--check":  # 試すだけのときは記録しない
-        print(report_md(rows, date))
+    md = report_md(rows, date) + hashtag_md(tag_rows)
+    if check:  # 試すだけのときは記録しない
+        print(md)
         return 0
+    # 読めなかった、調査で見つけたアカウントは次から外す（ずっと比べる分は外さない）
+    bad = {r["username"] for r in rows if r.get("error")}
+    for a in pool.get("accounts", []):
+        if a["username"].lstrip("@") in bad and a.get("status", "active") == "active":
+            a["status"] = "unreadable"
+            a["checked"] = date
+    if pool.get("accounts"):
+        POOL_PATH.write_text(json.dumps(pool, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    if tag_rows:
+        hp = STATE_DIR / "hashtag_top.json"
+        hh = json.loads(hp.read_text(encoding="utf-8")) if hp.exists() else {}
+        hh[date] = tag_rows
+        for k in sorted(hh)[:-12]:  # 12週分だけ残す
+            hh.pop(k)
+        hp.write_text(json.dumps(hh, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     path = STATE_DIR / "competitors.json"
     hist = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     hist[date] = rows
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(hist, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    md = report_md(rows, date)
     (STATE_DIR / "competitors_report.md").write_text(md + "\n", encoding="utf-8")
     print(md)
     return 0
